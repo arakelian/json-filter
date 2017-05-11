@@ -1,0 +1,70 @@
+// json-filter
+
+buildscript {
+    repositories {
+      jcenter()
+    }
+}
+
+plugins {
+	id 'java'
+	id 'maven'
+    id 'signing'
+	id 'eclipse'
+	id 'idea'
+
+    // keep dependencies up-to-date!
+    id 'com.github.ben-manes.versions' version '0.14.0'
+
+    // useful for creating immutable java beans
+    id 'org.inferred.processors' version '1.2.3'
+
+    // to ensure clean code
+    id "net.ltgt.errorprone" version "0.0.10"
+
+    // for deployment to Maven Central
+    id "io.codearte.nexus-staging" version "0.6.1"
+}
+
+group   = 'com.arakelian'
+
+// common gradle code shared between projects
+apply from: "gradle/core.gradle"
+
+// only want to configure this if ~/.gradle/gradle.properties contains nexus username and password;
+// this snippet is used for deployment to Maven Central
+if (project.hasProperty('nexusUsername')) {
+    // project-specific properties configured here; see core.gradle for general configuration
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                pom.project {
+                    url 'https://github.com/arakelian/docker-junit-rule'
+                    scm {
+                        connection 'scm:git:https://github.com/arakelian/docker-junit-rule.git'
+                        developerConnection 'scm:git:git@github.com:arakelian/docker-junit-rule.git'
+                        url 'https://github.com/arakelian/docker-junit-rule.git'
+                    }
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+	processor 'org.immutables:value:2.4.6'
+
+	// common stuff
+    compile 'com.google.guava:guava:21.0'
+
+	// logging
+    testCompile 'org.apache.logging.log4j:log4j-api:2.8.1'
+    testCompile 'org.apache.logging.log4j:log4j-core:2.8.1'
+    testCompile 'org.apache.logging.log4j:log4j-slf4j-impl:2.8.1'
+    testCompile 'org.slf4j:jcl-over-slf4j:1.7.25'
+    testCompile 'org.slf4j:jul-to-slf4j:1.7.25'
+    compile     'org.slf4j:slf4j-api:1.7.25'
+
+    // for unit testing
+    testCompile 'junit:junit:4.12'
+}
