@@ -18,6 +18,3 @@ script:
   - ./gradlew clean build -i --continue
 
 sudo: required
-
-services:
-  - docker
