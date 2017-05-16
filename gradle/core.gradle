@@ -1,5 +1,5 @@
 // Generic helper .gradle file copied between projects
-// - Probably easier way to do this, maybe a Gradle plugin, but still learning Gradle.
+// Note: There is probably easier way to do this, maybe a Gradle plugin, but still learning Gradle.
 
 task wrapper(type: Wrapper) {
     gradleVersion = '3.5'
@@ -28,23 +28,26 @@ ext {
     // useful shortcuts
     buildAliases = [
    		'all' : ['clean', 'classpath', 'build', 'install'],
-   		'deploy' : ['upload', 'closeRepository']
+   		'deploy' : ['upload', 'closeAndReleaseRepository']
     ]
 }
 
 // Maven Central requires Javadocs
+
 task javadocJar(type: Jar, dependsOn:classes) {
     classifier = 'javadoc'
     from javadoc
 }
 
 // always nice to have source code available in other projects
+
 task sourcesJar(type:Jar, dependsOn:classes) {
     classifier = 'sources'
     from sourceSets.main.allSource
 }
 
 // other projects may want to extend our unit tests
+
 task testJar(type:Jar, dependsOn:testClasses) {
     classifier = 'tests'
     from sourceSets.test.output
@@ -95,8 +98,8 @@ test {
 
 // Custom Eclipse .classpath generation to use project references instead of .jar references; this
 // allows us to do refactoring in Eclipse across projects
-//
 // see: https://docs.gradle.org/current/dsl/org.gradle.plugins.ide.eclipse.model.EclipseClasspath.html
+
 eclipse {
     classpath {
         // override default 'bin'
@@ -190,11 +193,14 @@ task generateGitProperties {
     }
 }
 
+// this snippet is used for deployment to Maven Central
+
 if (project.hasProperty('nexusUsername')) {
     signing {
         sign configurations.archives
     }
 
+	// note: nexus credentials are typically kept in ~/.gradle/gradle.properties
     uploadArchives {
         repositories {
             // see: http://central.sonatype.org/pages/gradle.html
@@ -215,6 +221,13 @@ if (project.hasProperty('nexusUsername')) {
                     name project.name
                     packaging 'jar'
                     description project.description
+
+                    url 'https://github.com/arakelian/' + project.name
+                    scm {
+                        connection 'scm:git:https://github.com/arakelian/' + project.name + '.git'
+                        developerConnection 'scm:git:git@github.com:arakelian/' + project.name + '.git'
+                        url 'https://github.com/arakelian/' + project.name + '.git'
+                    }
 
                     licenses {
                         license {
@@ -237,15 +250,54 @@ if (project.hasProperty('nexusUsername')) {
     }
 }
 
+// replace version number in README file and commit the change;
+// after this command, we're ready to tag the release
+
+task updateReadme() {
+	doLast {
+		def nextVersion = project.version
+		if(project.version.endsWith('-SNAPSHOT')) {
+		    // after committing the README file the project version will not have SNAPSHOT on it
+			nextVersion = project.version.substring(0, project.version.length() -'-SNAPSHOT'.length())
+		}
+
+		def file = new File('README.md')
+		def text = file.text
+		println "Updating README to reference version " + nextVersion
+		file.withWriter { w ->
+		  w << text.replaceAll("[0-9]+\\.[0-9]+\\.[0-9]+(-SNAPSHOT)?", nextVersion)
+		}
+
+		def uncommitted = 'git status README.md --porcelain'.execute().text.trim()
+		if(uncommitted) {
+			// commit change to README
+			def cmd = ['git','commit','-m','Update README to version ' + nextVersion,'README.md']
+			def process = new ProcessBuilder(cmd).redirectErrorStream(true).start()
+			process.waitFor()
+			println process.text
+		} else {
+			println "No changes made to README"
+		}
+	}
+}
+
+// when we tag a release use project version as tag comment
+
+tag {
+    message {
+        "${project.version}"
+    }
+}
 
 // This code allows us to define aliases, such as "all", so that when we do "gradle all",
 // we can substitute in a series of other gradle tasks
-//
 // see: https://caffeineinduced.wordpress.com/2015/01/25/run-a-list-of-gradle-tasks-in-specific-order/
+
 def expandedTaskList = []
 
 // gradle respects ordering of tasks specified on command line, so we replace shortcuts
 // with equivalent commands as though they were specified by user
+
 gradle.startParameter.taskNames.each {
    expandedTaskList << (buildAliases[it] ? buildAliases[it] : it)
 }
