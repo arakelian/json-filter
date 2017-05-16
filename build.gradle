@@ -23,7 +23,7 @@ plugins {
     id "net.ltgt.errorprone" version "0.0.10"
 
     // for deployment to Maven Central
-    id "io.codearte.nexus-staging" version "0.6.1"
+    id "io.codearte.nexus-staging" version "0.8.0"
 }
 
 group   = 'com.arakelian'
