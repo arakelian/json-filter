@@ -14,16 +14,16 @@ plugins {
 	id 'idea'
 
     // keep dependencies up-to-date!
-    id 'com.github.ben-manes.versions' version '0.14.0'
+    id 'com.github.ben-manes.versions' version '0.15.0'
 
     // useful for creating immutable java beans
-    id 'org.inferred.processors' version '1.2.3'
+    id 'org.inferred.processors' version '1.2.15'
 
     // to ensure clean code
-    id "net.ltgt.errorprone" version "0.0.10"
+    id "net.ltgt.errorprone" version "0.0.12"
 
     // for deployment to Maven Central
-    id "io.codearte.nexus-staging" version "0.8.0"
+    id "io.codearte.nexus-staging" version "0.11.0"
 }
 
 group   = 'com.arakelian'
@@ -31,36 +31,16 @@ group   = 'com.arakelian'
 // common gradle code shared between projects
 apply from: "gradle/core.gradle"
 
-// only want to configure this if ~/.gradle/gradle.properties contains nexus username and password;
-// this snippet is used for deployment to Maven Central
-if (project.hasProperty('nexusUsername')) {
-    // project-specific properties configured here; see core.gradle for general configuration
-    uploadArchives {
-        repositories {
-            mavenDeployer {
-                pom.project {
-                    url 'https://github.com/arakelian/docker-junit-rule'
-                    scm {
-                        connection 'scm:git:https://github.com/arakelian/docker-junit-rule.git'
-                        developerConnection 'scm:git:git@github.com:arakelian/docker-junit-rule.git'
-                        url 'https://github.com/arakelian/docker-junit-rule.git'
-                    }
-                }
-            }
-        }
-    }
-}
-
 dependencies {
-	processor 'org.immutables:value:2.4.6'
+	processor 'org.immutables:value:2.5.6'
 
 	// common stuff
-    compile 'com.google.guava:guava:21.0'
+    compile 'com.google.guava:guava:23.1-jre'
 
 	// logging
-    testCompile 'org.apache.logging.log4j:log4j-api:2.8.1'
-    testCompile 'org.apache.logging.log4j:log4j-core:2.8.1'
-    testCompile 'org.apache.logging.log4j:log4j-slf4j-impl:2.8.1'
+    testCompile 'org.apache.logging.log4j:log4j-api:2.9.1'
+    testCompile 'org.apache.logging.log4j:log4j-core:2.9.1'
+    testCompile 'org.apache.logging.log4j:log4j-slf4j-impl:2.9.1'
     testCompile 'org.slf4j:jcl-over-slf4j:1.7.25'
     testCompile 'org.slf4j:jul-to-slf4j:1.7.25'
     compile     'org.slf4j:slf4j-api:1.7.25'
