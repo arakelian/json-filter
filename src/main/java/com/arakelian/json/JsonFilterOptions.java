@@ -21,45 +21,45 @@ import java.util.Set;
 
 import org.immutables.value.Value;
 
-@Value.Immutable(copy=false)
+@Value.Immutable(copy = false)
 public abstract class JsonFilterOptions {
-	@Nullable
-	public abstract JsonFilterCallback getCallback();
+    @Nullable
+    public abstract JsonFilterCallback getCallback();
 
-	@Nullable
-	public abstract Set<String> getExcludes();
+    @Nullable
+    public abstract Set<String> getExcludes();
 
-	@Nullable
-	public abstract Set<String> getIncludes();
+    @Nullable
+    public abstract Set<String> getIncludes();
 
-	public abstract Optional<Boolean> getPretty();
+    public abstract Optional<Boolean> getPretty();
 
-	public final boolean hasCallback() {
-		return getCallback() != null;
-	}
+    public final boolean hasCallback() {
+        return getCallback() != null;
+    }
 
-	public final boolean hasExcludes() {
-		final Set<String> excludes = getExcludes();
-		return excludes != null && excludes.size() != 0;
-	}
+    public final boolean hasExcludes() {
+        final Set<String> excludes = getExcludes();
+        return excludes != null && excludes.size() != 0;
+    }
 
-	public final boolean hasIncludes() {
-		final Set<String> includes = getIncludes();
-		return includes != null && includes.size() != 0;
-	}
+    public final boolean hasIncludes() {
+        final Set<String> includes = getIncludes();
+        return includes != null && includes.size() != 0;
+    }
 
-	public final boolean isEmpty() {
-		return !hasIncludes() && !hasExcludes() && !hasCallback();
-	}
+    public final boolean isEmpty() {
+        return !hasIncludes() && !hasExcludes() && !hasCallback();
+    }
 
-	/**
-	 * Returns true if an identity-transform is requested, e.g. includes and excludes are empty but
-	 * caller still wants filter applied for pretty printing.
-	 *
-	 * @return true if an identity-transform is requested
-	 */
-	@Value.Default
-	public boolean isIdentityTransform() {
-		return false;
-	}
+    /**
+     * Returns true if an identity-transform is requested, e.g. includes and excludes are empty but
+     * caller still wants filter applied for pretty printing.
+     *
+     * @return true if an identity-transform is requested
+     */
+    @Value.Default
+    public boolean isIdentityTransform() {
+        return false;
+    }
 }

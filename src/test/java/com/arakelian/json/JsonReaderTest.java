@@ -36,66 +36,66 @@ import org.junit.Test;
 import com.arakelian.json.JsonReader.JsonToken;
 
 public class JsonReaderTest {
-	private Object[] parse(final String json) throws IOException {
-		final List<Object> tokens = new ArrayList<>();
-		final JsonReader reader = new JsonReader(json);
-		for (JsonToken token = reader.nextEvent(); token != JsonToken.EOF; token = reader.nextEvent()) {
-			tokens.add(token);
-			switch (token) {
-			case OBJECT_START:
-			case OBJECT_END:
-			case ARRAY_END:
-			case ARRAY_START:
-			case NULL:
-			case EOF:
-				break;
-			case BIGNUMBER:
-				tokens.add(reader.getNumberChars().toString());
-				break;
-			case BOOLEAN:
-				tokens.add(reader.getBoolean());
-				break;
-			case LONG:
-				tokens.add(reader.getLong());
-				break;
-			case NUMBER:
-				tokens.add(reader.getNumberChars().toString());
-				break;
-			case STRING:
-				tokens.add(reader.getString());
-				break;
-			default:
-				break;
-			}
-		}
-		return tokens.toArray(new Object[tokens.size()]);
-	}
+    private Object[] parse(final String json) throws IOException {
+        final List<Object> tokens = new ArrayList<>();
+        final JsonReader reader = new JsonReader(json);
+        for (JsonToken token = reader.nextEvent(); token != JsonToken.EOF; token = reader.nextEvent()) {
+            tokens.add(token);
+            switch (token) {
+            case OBJECT_START:
+            case OBJECT_END:
+            case ARRAY_END:
+            case ARRAY_START:
+            case NULL:
+            case EOF:
+                break;
+            case BIGNUMBER:
+                tokens.add(reader.getNumberChars().toString());
+                break;
+            case BOOLEAN:
+                tokens.add(reader.getBoolean());
+                break;
+            case LONG:
+                tokens.add(reader.getLong());
+                break;
+            case NUMBER:
+                tokens.add(reader.getNumberChars().toString());
+                break;
+            case STRING:
+                tokens.add(reader.getString());
+                break;
+            default:
+                break;
+            }
+        }
+        return tokens.toArray(new Object[tokens.size()]);
+    }
 
-	@Test
-	public void testSimple() throws IOException {
-		final String json = "" + //
-				"{\n" + //
-				"   \"one\":1,\n" + //
-				"   \"two\":2.5,\n" + //
-				"   \"bool1\":false,\n" + //
-				"   \"bool2\":true,\n" + //
-				"   \"four\":null,\n" + //
-				"   \"five\":[\n" + //
-				"      \"1\",\n" + //
-				"      \"2\",\n" + //
-				"      \"3\"\n" + //
-				"   ]\n" + //
-				"}";
-		final Object[] expected = new Object[] { //
-				OBJECT_START, //
-				STRING, "one", LONG, Long.valueOf(1), //
-				STRING, "two", NUMBER, "2.5", //
-				STRING, "bool1", BOOLEAN, false, //
-				STRING, "bool2", BOOLEAN, true, //
-				STRING, "four", NULL, //
-				STRING, "five", ARRAY_START, STRING, "1", STRING, "2", STRING, "3", ARRAY_END, //
-				OBJECT_END };
-		final Object[] actual = parse(json);
-		Assert.assertArrayEquals(expected, actual);
-	}
+    @Test
+    public void testSimple() throws IOException {
+        final String json = "" + //
+                "{\n" + //
+                "   \"one\":1,\n" + //
+                "   \"two\":2.5,\n" + //
+                "   \"bool1\":false,\n" + //
+                "   \"bool2\":true,\n" + //
+                "   \"four\":null,\n" + //
+                "   \"five\":[\n" + //
+                "      \"1\",\n" + //
+                "      \"2\",\n" + //
+                "      \"3\"\n" + //
+                "   ]\n" + //
+                "}";
+        final Object[] expected = new Object[] { //
+                OBJECT_START, //
+                STRING, "one", LONG, Long.valueOf(1), //
+                STRING, "two", NUMBER, "2.5", //
+                STRING, "bool1", BOOLEAN, false, //
+                STRING, "bool2", BOOLEAN, true, //
+                STRING, "four", NULL, //
+                STRING, "five", ARRAY_START, STRING, "1", STRING, "2", STRING, "3", ARRAY_END, //
+                OBJECT_END };
+        final Object[] actual = parse(json);
+        Assert.assertArrayEquals(expected, actual);
+    }
 }

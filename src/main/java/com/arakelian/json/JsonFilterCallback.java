@@ -19,11 +19,11 @@ package com.arakelian.json;
 import java.io.IOException;
 
 public interface JsonFilterCallback {
-	@SuppressWarnings("unused")
-	public default void afterStartObject(final JsonFilter filter) throws IOException {
-	}
+    @SuppressWarnings("unused")
+    public default void afterStartObject(final JsonFilter filter) throws IOException {
+    }
 
-	@SuppressWarnings("unused")
-	public default void beforeEndObject(final JsonFilter filter) throws IOException {
-	}
+    @SuppressWarnings("unused")
+    public default void beforeEndObject(final JsonFilter filter) throws IOException {
+    }
 }
