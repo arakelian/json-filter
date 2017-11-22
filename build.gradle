@@ -7,11 +7,11 @@ buildscript {
 }
 
 plugins {
-	id 'java'
-	id 'maven'
+    id 'java'
+    id 'maven'
     id 'signing'
-	id 'eclipse'
-	id 'idea'
+    id 'eclipse'
+    id 'idea'
 
     // keep dependencies up-to-date!
     id 'com.github.ben-manes.versions' version '0.17.0'
@@ -20,7 +20,7 @@ plugins {
     id 'org.inferred.processors' version '1.2.15'
 
     // to ensure clean code
-    id "net.ltgt.errorprone" version "0.0.12"
+    id "net.ltgt.errorprone" version "0.0.13"
 
     // for deployment to Maven Central
     id "io.codearte.nexus-staging" version "0.11.0"
@@ -32,12 +32,12 @@ group   = 'com.arakelian'
 apply from: "gradle/core.gradle"
 
 dependencies {
-	processor 'org.immutables:value:2.5.6'
+    processor 'org.immutables:value:2.5.6'
 
-	// common stuff
+    // common stuff
     compile 'com.google.guava:guava:23.1-jre'
 
-	// logging
+    // logging
     testCompile 'org.apache.logging.log4j:log4j-api:2.9.1'
     testCompile 'org.apache.logging.log4j:log4j-core:2.9.1'
     testCompile 'org.apache.logging.log4j:log4j-slf4j-impl:2.9.1'
