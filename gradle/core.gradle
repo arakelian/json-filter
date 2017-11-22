@@ -2,7 +2,7 @@
 // Note: There is probably easier way to do this, maybe a Gradle plugin, but still learning Gradle.
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.5'
+    gradleVersion = '4.3.1'
 }
 
 tasks.withType(JavaCompile) {
@@ -27,8 +27,8 @@ ext {
 
     // useful shortcuts
     buildAliases = [
-   		'all' : ['clean', 'classpath', 'build', 'install'],
-   		'deploy' : ['upload', 'closeAndReleaseRepository']
+        'all' : ['clean', 'classpath', 'build', 'install'],
+        'deploy' : ['upload', 'closeAndReleaseRepository']
     ]
 }
 
@@ -127,15 +127,15 @@ eclipse {
                 new File("${projectDir}/..").eachDir {
                     if(new File("${it}/build.gradle").exists()) {
                         use_eclipse_project_refs += it.name
-                 	}
+                     }
                 }
 
                 println 'Generating Eclipse .classpath file'
                 def kindOrder = [ 'src':1, 'con':2, 'lib':3, 'output':0 ];
                 classpath.entries.sort(true, { a,b ->
-                        def order = kindOrder[a.kind] <=> kindOrder[b.kind]
-                        order != 0 ? order : a.path <=> b.path
-                    } as Comparator).each { entry ->
+                    def order = kindOrder[a.kind] <=> kindOrder[b.kind]
+                    order != 0 ? order : a.path <=> b.path
+                } as Comparator).each { entry ->
                     if(entry.kind.equals('lib')) {
                         use_eclipse_project_refs.each { name ->
                             def regex = '/(' + ( name.endsWith('-') ?
@@ -200,9 +200,12 @@ if (project.hasProperty('SONATYPE_USERNAME')) {
         sign configurations.archives
     }
 
-	// note: nexus credentials are typically kept in ~/.gradle/gradle.properties
+    // note: nexus credentials are typically kept in ~/.gradle/gradle.properties
     uploadArchives {
         repositories {
+            // deploy locally
+            mavenLocal()
+
             // see: http://central.sonatype.org/pages/gradle.html
             mavenDeployer {
                 beforeDeployment {
@@ -254,31 +257,31 @@ if (project.hasProperty('SONATYPE_USERNAME')) {
 // after this command, we're ready to tag the release
 
 task updateReadme() {
-	doLast {
-		def nextVersion = project.version
-		if(project.version.endsWith('-SNAPSHOT')) {
-		    // after committing the README file the project version will not have SNAPSHOT on it
-			nextVersion = project.version.substring(0, project.version.length() -'-SNAPSHOT'.length())
-		}
+    doLast {
+        def nextVersion = project.version
+        if(project.version.endsWith('-SNAPSHOT')) {
+            // after committing the README file the project version will not have SNAPSHOT on it
+            nextVersion = project.version.substring(0, project.version.length() -'-SNAPSHOT'.length())
+        }
 
-		def file = new File('README.md')
-		def text = file.text
-		println "Updating README to reference version " + nextVersion
-		file.withWriter { w ->
-		  w << text.replaceAll("[0-9]+\\.[0-9]+\\.[0-9]+(-SNAPSHOT)?", nextVersion)
-		}
+        def file = new File('README.md')
+        def text = file.text
+        println "Updating README to reference version " + nextVersion
+        file.withWriter { w ->
+          w << text.replaceAll("[0-9]+\\.[0-9]+\\.[0-9]+(-SNAPSHOT)?", nextVersion)
+        }
 
-		def uncommitted = 'git status README.md --porcelain'.execute().text.trim()
-		if(uncommitted) {
-			// commit change to README
-			def cmd = ['git','commit','-m','Update README to version ' + nextVersion,'README.md']
-			def process = new ProcessBuilder(cmd).redirectErrorStream(true).start()
-			process.waitFor()
-			println process.text
-		} else {
-			println "No changes made to README"
-		}
-	}
+        def uncommitted = 'git status README.md --porcelain'.execute().text.trim()
+        if(uncommitted) {
+            // commit change to README
+            def cmd = ['git','commit','-m','Update README to version ' + nextVersion,'README.md']
+            def process = new ProcessBuilder(cmd).redirectErrorStream(true).start()
+            process.waitFor()
+            println process.text
+        } else {
+            println "No changes made to README"
+        }
+    }
 }
 
 // when we tag a release use project version as tag comment
