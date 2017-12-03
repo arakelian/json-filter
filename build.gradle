@@ -35,7 +35,7 @@ dependencies {
     processor 'org.immutables:value:2.5.6'
 
     // common stuff
-    compile 'com.google.guava:guava:23.1-jre'
+    compile 'com.google.guava:guava:23.4-jre'
 
     // logging
     testCompile 'org.apache.logging.log4j:log4j-api:2.9.1'
