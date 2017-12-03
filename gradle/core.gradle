@@ -66,6 +66,7 @@ repositories {
     mavenLocal()
 
     // external maven repo is next preference
+    mavenCentral()
     jcenter()
 }
 
@@ -197,7 +198,7 @@ task generateGitProperties {
 
 // this snippet is used for deployment to Maven Central
 
-if (project.hasProperty('SONATYPE_USERNAME')) {
+if (project.hasProperty('nexusUsername')) {
     signing {
         sign configurations.archives
     }
@@ -215,11 +216,11 @@ if (project.hasProperty('SONATYPE_USERNAME')) {
                 }
 
                 repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                    authentication(userName: SONATYPE_USERNAME, password: SONATYPE_PASSWORD)
+                    authentication(userName: nexusUsername, password: nexusPassword)
                 }
 
                 snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                    authentication(userName: SONATYPE_USERNAME, password: SONATYPE_PASSWORD)
+                    authentication(userName: nexusUsername, password: nexusPassword)
                 }
 
                 pom.project {
