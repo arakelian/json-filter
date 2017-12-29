@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,16 +35,17 @@ public final class JsonReader {
         LONG,
 
         /**
-         * Event indicating a JSON number value which has a fractional part or an exponent and with string
-         * length &amp;= 23 chars not including sign. This covers all representations of normal values for
-         * Double.toString().
+         * Event indicating a JSON number value which has a fractional part or an exponent and with
+         * string length &amp;= 23 chars not including sign. This covers all representations of
+         * normal values for Double.toString().
          */
         NUMBER,
 
         /**
-         * Event indicating a JSON number value that was not produced by toString of any Java primitive
-         * numerics such as Double or Long. It is either an integer outside the range of a 64 bit signed
-         * integer, or a floating point value with a string representation of more than 23 chars.
+         * Event indicating a JSON number value that was not produced by toString of any Java
+         * primitive numerics such as Double or Long. It is either an integer outside the range of a
+         * 64 bit signed integer, or a floating point value with a string representation of more
+         * than 23 chars.
          */
         BIGNUMBER,
 
@@ -391,8 +392,8 @@ public final class JsonReader {
     }
 
     /**
-     * Reads a number from the input stream and parses it as a long, only if the value will in fact fit
-     * into a signed 64 bit integer.
+     * Reads a number from the input stream and parses it as a long, only if the value will in fact
+     * fit into a signed 64 bit integer.
      *
      * @return next number from the input stream
      * @throws IOException
@@ -418,12 +419,12 @@ public final class JsonReader {
      * Returns the characters of a JSON numeric value.
      * </p>
      * <p>
-     * The underlying buffer of the returned <code>CharArr</code> should *not* be modified as it may be
-     * shared with the input buffer.
+     * The underlying buffer of the returned <code>CharArr</code> should *not* be modified as it may
+     * be shared with the input buffer.
      * </p>
      * <p>
-     * The returned <code>CharSequence</code> will only be valid up until the next JSONParser method is
-     * called. Any required data should be read before that point.
+     * The returned <code>CharSequence</code> will only be valid up until the next JSONParser method
+     * is called. Any required data should be read before that point.
      * </p>
      *
      * @return the characters of the next JSON numeric value
@@ -469,12 +470,12 @@ public final class JsonReader {
      * {@link #getString}.
      * </p>
      * <p>
-     * The underlying buffer of the returned <code>CharSequence</code> should *not* be modified as it
-     * may be shared with the input buffer.
+     * The underlying buffer of the returned <code>CharSequence</code> should *not* be modified as
+     * it may be shared with the input buffer.
      * </p>
      * <p>
-     * The returned <code>CharSequence</code> will only be valid up until the next JSONParser method is
-     * called. Any required data should be read before that point.
+     * The returned <code>CharSequence</code> will only be valid up until the next JSONParser method
+     * is called. Any required data should be read before that point.
      * </p>
      *
      * @return the characters of the JSON string value that would be returned by calling
@@ -504,9 +505,9 @@ public final class JsonReader {
     }
 
     /**
-     * Returns true if the given character is considered to be whitespace. One difference between Java's
-     * Character.isWhitespace() is that this method considers a hard space (non-breaking space, or nbsp)
-     * to be whitespace.
+     * Returns true if the given character is considered to be whitespace. One difference between
+     * Java's Character.isWhitespace() is that this method considers a hard space (non-breaking
+     * space, or nbsp) to be whitespace.
      *
      * @param ch
      *            character to be tested
@@ -850,8 +851,8 @@ public final class JsonReader {
     }
 
     /**
-     * Returns the long read... only significant if valstate==LONG after this call. firstChar should be
-     * the first numeric digit read.
+     * Returns the long read... only significant if valstate==LONG after this call. firstChar should
+     * be the first numeric digit read.
      */
     private long readNumber(final int firstChar, final boolean isNeg) throws IOException {
         // unsafe OK since we know output is big enough

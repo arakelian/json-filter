@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -56,11 +56,14 @@ public class JsonFilterTest {
                 "    \"id\"\n" + //
                 "  ]\n" + //
                 "}";
-        Assert.assertEquals(expected, JsonFilter.filter(json, //
-                ImmutableJsonFilterOptions.builder() //
-                        .addExcludes("properties/id/description") //
-                        .pretty(true) //
-                        .build()));
+        Assert.assertEquals(
+                expected,
+                JsonFilter.filter(
+                        json, //
+                        ImmutableJsonFilterOptions.builder() //
+                                .addExcludes("properties/id/description") //
+                                .pretty(true) //
+                                .build()));
     }
 
     @Test
@@ -77,11 +80,14 @@ public class JsonFilterTest {
                 "  \"id\" : 1,\n" + //
                 "  \"name\" : \"A green door\"\n" + //
                 "}";
-        Assert.assertEquals(expected, JsonFilter.filter(json, //
-                ImmutableJsonFilterOptions.builder() //
-                        .addExcludes("created", "updated") //
-                        .pretty(true) //
-                        .build()));
+        Assert.assertEquals(
+                expected,
+                JsonFilter.filter(
+                        json, //
+                        ImmutableJsonFilterOptions.builder() //
+                                .addExcludes("created", "updated") //
+                                .pretty(true) //
+                                .build()));
     }
 
     @Test
@@ -108,10 +114,14 @@ public class JsonFilterTest {
                 "    }\n" + //
                 "  }\n" + //
                 "}";
-        Assert.assertEquals(expected, JsonFilter.filter(json, ImmutableJsonFilterOptions.builder() //
-                .addIncludes("properties/id") //
-                .pretty(true) //
-                .build()));
+        Assert.assertEquals(
+                expected,
+                JsonFilter.filter(
+                        json,
+                        ImmutableJsonFilterOptions.builder() //
+                                .addIncludes("properties/id") //
+                                .pretty(true) //
+                                .build()));
     }
 
     @Test
@@ -127,10 +137,14 @@ public class JsonFilterTest {
                 "{\n" + //
                 "  \"name\" : \"A green door\"\n" + //
                 "}";
-        Assert.assertEquals(expected, JsonFilter.filter(json, ImmutableJsonFilterOptions.builder() //
-                .addIncludes("name") //
-                .pretty(true) //
-                .build()));
+        Assert.assertEquals(
+                expected,
+                JsonFilter.filter(
+                        json,
+                        ImmutableJsonFilterOptions.builder() //
+                                .addIncludes("name") //
+                                .pretty(true) //
+                                .build()));
     }
 
     @Test

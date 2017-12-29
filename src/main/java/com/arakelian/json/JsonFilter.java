@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -71,7 +71,9 @@ public class JsonFilter {
             return includes == null;
         }
 
-        private boolean pathStartsWith(final CharSequence path, final CharSequence prefix,
+        private boolean pathStartsWith(
+                final CharSequence path,
+                final CharSequence prefix,
                 final boolean excluding) {
             if (path == prefix) {
                 return true;
@@ -132,8 +134,8 @@ public class JsonFilter {
     }
 
     /**
-     * Returns the compact version of the given JSON string; if the input string cannot be parsed for
-     * whatever reason, the original input value is returned as-is
+     * Returns the compact version of the given JSON string; if the input string cannot be parsed
+     * for whatever reason, the original input value is returned as-is
      *
      * @param s
      *            input string
@@ -245,8 +247,8 @@ public class JsonFilter {
     }
 
     /**
-     * Returns the pretty version of the given string; if the input string cannot be parsed for whatever
-     * reason, the original input value is returned as-is
+     * Returns the pretty version of the given string; if the input string cannot be parsed for
+     * whatever reason, the original input value is returned as-is
      *
      * @param str
      *            input string
@@ -283,14 +285,14 @@ public class JsonFilter {
     private int depth;
 
     /**
-     * Low-level JSON reader that does not needlessly produce Strings and other Java objects as the data
-     * is read.
+     * Low-level JSON reader that does not needlessly produce Strings and other Java objects as the
+     * data is read.
      **/
     private final JsonReader reader;
 
     /**
-     * Low-level JSON writer that does not needlessly produce Strings and other Java objects as JSON is
-     * produced.
+     * Low-level JSON writer that does not needlessly produce Strings and other Java objects as JSON
+     * is produced.
      */
     private final JsonWriter writer;
 
