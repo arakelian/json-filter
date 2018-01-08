@@ -20,10 +20,10 @@ package com.arakelian.json;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import com.arakelian.json.JsonReader.JsonToken;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 
 /**
  * Performs high-speed filtering of a JSON document. This class uses a highly optimized streaming
@@ -47,7 +47,7 @@ public class JsonFilter {
         }
 
         @Override
-        public boolean apply(final CharSequence path) {
+        public boolean test(final CharSequence path) {
             // excludes are always processed first!
             if (excludes != null) {
                 for (final String exclude : excludes) {
@@ -397,7 +397,7 @@ public class JsonFilter {
             final CharSequence name = reader.getStringChars();
             final int lastPath = pushPath(name);
             try {
-                if (predicate.apply(currentPath)) {
+                if (predicate.test(currentPath)) {
                     // must write name before advancing reader
                     writer.writeKey(name);
                 } else {
