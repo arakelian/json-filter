@@ -43,7 +43,7 @@ public class JsonFilterTest {
                 "}";
         final String expected = "" + //
                 "{\n" + //
-                "  \"$schema\" : \"http:\\/\\/json-schema.org\\/draft-04\\/schema#\",\n" + //
+                "  \"$schema\" : \"http://json-schema.org/draft-04/schema#\",\n" + //
                 "  \"title\" : \"Product\",\n" + //
                 "  \"description\" : \"A product from Acme's catalog\",\n" + //
                 "  \"type\" : \"object\",\n" + //
