@@ -27,7 +27,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>com.arakelian</groupId>
     <artifactId>json-filter</artifactId>
-    <version>1.7.0</version>
+    <version>1.7.1</version>
     <scope>compile</scope>
 </dependency>
 ```
@@ -42,7 +42,7 @@ repositories {
 }
 
 dependencies {
-  compile 'com.arakelian:json-filter:1.7.0'
+  compile 'com.arakelian:json-filter:1.7.1'
 }
 ```
 
