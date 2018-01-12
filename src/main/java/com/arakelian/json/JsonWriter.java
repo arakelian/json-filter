@@ -192,6 +192,8 @@ public class JsonWriter<W extends Writer> implements Closeable {
     }
 
     private final void internalWriteEscapedChar(final char ch) throws IOException {
+        // http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
+        // note: we are not required to escape forward slash (e.g. solidus)
         switch (ch) {
         case '"':
             writer.write("\\\"");
@@ -213,9 +215,6 @@ public class JsonWriter<W extends Writer> implements Closeable {
             break;
         case '\t':
             writer.write("\\t");
-            break;
-        case '/':
-            writer.write("\\/");
             break;
         default:
             // Reference: http://www.unicode.org/versions/Unicode5.1.0/
