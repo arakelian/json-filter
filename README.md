@@ -3,7 +3,10 @@
 High-speed stream-based filtering of arbitrarily large JSON documents.
 
 This library takes extraordinary pains to insure that Java objects are not created unnecessarily while processing
-the input and output streams. 
+the input and output streams.
+
+There are no dependencies on any third-party JSON libraries to ensure small code size, and to maximum performance
+of JSON streaming for the purpose of filtering. 
 
 Applications:
 * Redacting content that client is not allowed to see
