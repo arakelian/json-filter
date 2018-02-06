@@ -15,13 +15,14 @@ Applications:
 Filtering a JSON stream is very easy:
 
 ```java
-// create input and output streams
-JsonReader reader = new JsonReader(<instance of `java.io.Reader`>)
-JsonWriter writer = new JsonWriter(<instance of 'java.io.Writer`>)
+// configure input and output streams
+JsonReader reader = new JsonReader(<instance of java.io.Reader>)
+JsonWriter writer = new JsonWriter(<instance of java.io.Writer>)
 
 // configure filter
 JsonFilterOptions opts = ImmutableJsonFilterOptions.builder() //
   .addExcludes("some/path/to/exclude") //
+  .addExcludes("another/path/to/exclude") //
   .pretty(true) //
   .build();
   
@@ -32,10 +33,10 @@ filter.process();
 
 ## Paths
 
-Paths are used to identify portions of the JSON to be included or excluded.  The forward slash (`/`) character
-can be used in a path to separate nested JSON elements.
+Paths are used to identify JSON fragments that should be included or excluded.  The forward slash (`/`) 
+character can be used to identify nested JSON elements.
 
-For example, consider the following JSON:
+Consider the following JSON:
 
 ```java
 {
@@ -82,6 +83,9 @@ The following paths could be constructed:
 * `store/book/category` would resolve to 4 nodes with values of `reference` and `fiction`.
 * `store/bicycle/color` would resolve to a single node with a value of `19.95`. 
 
+Note that paths do not need to contain array indices, e.g. `[]`. In the example above, `store/book` is an array,
+but the path `store/book/category` implies traversal through the elements of each of `book`.
+ 
 
 ## Installation
 
