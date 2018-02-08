@@ -92,7 +92,7 @@ but the path `store/book/category` implies traversal through the elements of eac
 
 ## Installation
 
-The library is available on [Maven Central](https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.arakelian%22%20AND%20a%3A%22json-filter%22)
+The library is available on [Maven Central](https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.arakelian%22%20AND%20a%3A%22json-filter%22).
 
 ### Maven
 
