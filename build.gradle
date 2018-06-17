@@ -14,19 +14,19 @@ plugins {
     id 'idea'
 
     // keep dependencies up-to-date!
-    id 'com.github.ben-manes.versions' version '0.17.0'
+    id 'com.github.ben-manes.versions' version '0.19.0'
 
     // useful for creating immutable java beans
     id 'org.inferred.processors' version '1.2.15'
 
     // to ensure clean code
-    id "net.ltgt.errorprone" version "0.0.13"
+    id "net.ltgt.errorprone" version "0.0.14"
 
     // for deployment to Maven Central
     id "io.codearte.nexus-staging" version "0.11.0"
 
     // for building fat jar
-    id "com.github.johnrengelman.shadow" version "2.0.2"
+    id "com.github.johnrengelman.shadow" version "2.0.4"
 
     // useful utilities
     id "com.arakelian.multitool" version "1.4.2"
@@ -54,10 +54,10 @@ multitool {
 }
 
 dependencies {
-    processor 'org.immutables:value:2.5.6'
+    processor 'org.immutables:value:2.6.1'
 
     // we shadow Guava due to frequent downstream compatibility issues
-    shadow 'com.google.guava:guava:24.0-jre'
+    shadow 'com.google.guava:guava:25.1-jre'
 
     // logging
     testCompile 'org.apache.logging.log4j:log4j-api:2.9.1'
