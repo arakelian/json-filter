@@ -164,16 +164,20 @@ public final class JsonReader {
         this.buf = buffer;
     }
 
-    public JsonReader(final String data) {
+    public JsonReader(final CharSequence data) {
         this(data, 0, data.length());
     }
 
-    public JsonReader(final String data, final int start, final int end) {
+    public JsonReader(final CharSequence data, final int start, final int end) {
         this.in = null;
         this.start = start;
         this.end = end;
-        this.buf = new char[end - start];
-        data.getChars(start, end, buf, 0);
+
+        final int len = end - start;
+        this.buf = new char[len];
+        for (int i = 0; i < len; i++) {
+            buf[i] = data.charAt(i + start);
+        }
     }
 
     private void copyBigNumber(final SimpleCharArr dest) throws IOException {

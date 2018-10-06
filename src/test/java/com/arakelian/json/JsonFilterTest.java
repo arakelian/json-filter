@@ -156,7 +156,7 @@ public class JsonFilterTest {
         assertEquals("[\"a\",\"b\"][\"c\":\"d\"]", JsonFilter.compactQuietly("[\"a\",\"b\"][\"c\":\"d\"]"));
 
         // make it pretty
-        final String prettyify = JsonFilter.prettyifyQuietly("\n\n[1,2,\"3\"\n,\nfalse ]\n\n");
+        final String prettyify = JsonFilter.prettyifyQuietly("\n\n[1,2,\"3\"\n,\nfalse ]\n\n").toString();
         assertEquals("[\n" + //
                 "  1,\n" + //
                 "  2,\n" + //
@@ -165,7 +165,7 @@ public class JsonFilterTest {
                 "]", prettyify);
 
         // make it pretty
-        final String compact = JsonFilter.compactQuietly(prettyify);
+        final String compact = JsonFilter.compactQuietly(prettyify).toString();
         assertEquals("[1,2,\"3\",false]", compact);
     }
 
@@ -179,14 +179,14 @@ public class JsonFilterTest {
 
         // make it pretty
         final String prettyify = JsonFilter
-                .prettyifyQuietly("\n\n{\"id\":\"100\",\"name\":\"Greg Arakelian\"}\n\n");
+                .prettyifyQuietly("\n\n{\"id\":\"100\",\"name\":\"Greg Arakelian\"}\n\n").toString();
         assertEquals("{\n" + //
                 "  \"id\" : \"100\",\n" + //
                 "  \"name\" : \"Greg Arakelian\"\n" + //
                 "}", prettyify);
 
         // make it pretty
-        final String compact = JsonFilter.compactQuietly(prettyify);
+        final String compact = JsonFilter.compactQuietly(prettyify).toString();
         assertEquals("{\"id\":\"100\",\"name\":\"Greg Arakelian\"}", compact);
     }
 }

@@ -129,7 +129,7 @@ public class JsonFilter {
      * @throws IOException
      *             if invalid JSON
      */
-    public static String compact(final String s) throws IOException {
+    public static CharSequence compact(final CharSequence s) throws IOException {
         return identityTransform(s, false);
     }
 
@@ -141,7 +141,7 @@ public class JsonFilter {
      *            input string
      * @return compact version of the given string or original string if invalid JSON
      */
-    public static String compactQuietly(final String s) {
+    public static CharSequence compactQuietly(final CharSequence s) {
         return identityTransformQuietly(s, false);
     }
 
@@ -165,7 +165,7 @@ public class JsonFilter {
         return true;
     }
 
-    public static String filter(final String json, final JsonFilterOptions options) throws IOException {
+    public static CharSequence filter(final CharSequence json, final JsonFilterOptions options) throws IOException {
         if (json == null || json.length() == 0) {
             return json;
         }
@@ -190,7 +190,7 @@ public class JsonFilter {
         return buf.toString();
     }
 
-    private static String identityTransform(final String s, final boolean pretty) throws IOException {
+    private static CharSequence identityTransform(final CharSequence s, final boolean pretty) throws IOException {
         if (isJsonObjectOrArray(s)) {
             final JsonFilterOptions opts = ImmutableJsonFilterOptions.builder() //
                     .identityTransform(true) //
@@ -201,7 +201,7 @@ public class JsonFilter {
         return s;
     }
 
-    private static String identityTransformQuietly(final String s, final boolean pretty) {
+    private static CharSequence identityTransformQuietly(final CharSequence s, final boolean pretty) {
         try {
             return identityTransform(s, pretty);
         } catch (final IOException e) {
@@ -210,7 +210,7 @@ public class JsonFilter {
         }
     }
 
-    private static boolean isJsonObjectOrArray(final String s) {
+    private static boolean isJsonObjectOrArray(final CharSequence s) {
         if (s == null || s.length() == 0) {
             return false;
         }
@@ -242,7 +242,7 @@ public class JsonFilter {
      * @throws IOException
      *             if invalid JSON
      */
-    public static String prettyify(final String str) throws IOException {
+    public static CharSequence prettyify(final CharSequence str) throws IOException {
         return identityTransform(str, true);
     }
 
@@ -254,7 +254,7 @@ public class JsonFilter {
      *            input string
      * @return pretty version of the given string or the original string if invalid JSON
      */
-    public static String prettyifyQuietly(final String str) {
+    public static CharSequence prettyifyQuietly(final CharSequence str) {
         return identityTransformQuietly(str, true);
     }
 
