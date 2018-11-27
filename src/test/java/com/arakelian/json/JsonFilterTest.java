@@ -17,8 +17,6 @@
 
 package com.arakelian.json;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 
 import org.junit.Assert;
@@ -56,7 +54,7 @@ public class JsonFilterTest {
                 "    \"id\"\n" + //
                 "  ]\n" + //
                 "}";
-        Assert.assertEquals(
+        assertEquals(
                 expected,
                 JsonFilter.filter(
                         json, //
@@ -80,7 +78,7 @@ public class JsonFilterTest {
                 "  \"id\" : 1,\n" + //
                 "  \"name\" : \"A green door\"\n" + //
                 "}";
-        Assert.assertEquals(
+        assertEquals(
                 expected,
                 JsonFilter.filter(
                         json, //
@@ -114,7 +112,7 @@ public class JsonFilterTest {
                 "    }\n" + //
                 "  }\n" + //
                 "}";
-        Assert.assertEquals(
+        assertEquals(
                 expected,
                 JsonFilter.filter(
                         json,
@@ -137,7 +135,7 @@ public class JsonFilterTest {
                 "{\n" + //
                 "  \"name\" : \"A green door\"\n" + //
                 "}";
-        Assert.assertEquals(
+        assertEquals(
                 expected,
                 JsonFilter.filter(
                         json,
@@ -188,5 +186,9 @@ public class JsonFilterTest {
         // make it pretty
         final String compact = JsonFilter.compactQuietly(prettyify).toString();
         assertEquals("{\"id\":\"100\",\"name\":\"Greg Arakelian\"}", compact);
+    }
+
+    private void assertEquals(final String expected, final CharSequence filter) {
+        Assert.assertEquals(expected, filter != null ? filter.toString() : null);
     }
 }
