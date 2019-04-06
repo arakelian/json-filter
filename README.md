@@ -13,6 +13,11 @@ Applications:
 * Reducing the size of large JSON before parsing using a library like Jackson 
 
 
+## Requirements
+
+* Version 2.x is compatible with Java 8+
+* Version 3.x is compatible with Java 11+
+
 ## Usage
 
 Filtering a JSON stream is very easy:
@@ -115,7 +120,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>com.arakelian</groupId>
     <artifactId>json-filter</artifactId>
-    <version>2.2.0</version>
+    <version>3.0.0</version>
     <scope>compile</scope>
 </dependency>
 ```
@@ -130,7 +135,7 @@ repositories {
 }
 
 dependencies {
-  compile 'com.arakelian:json-filter:2.2.0'
+  compile 'com.arakelian:json-filter:3.0.0'
 }
 ```
 
