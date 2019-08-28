@@ -15,8 +15,7 @@ Applications:
 
 ## Requirements
 
-* Version 2.x is compatible with Java 8+
-* Version 3.x is compatible with Java 11+
+* Compatible with Java 8+
 
 ## Usage
 
@@ -120,7 +119,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>com.arakelian</groupId>
     <artifactId>json-filter</artifactId>
-    <version>3.1.0</version>
+    <version>3.2.0</version>
     <scope>compile</scope>
 </dependency>
 ```
@@ -135,7 +134,7 @@ repositories {
 }
 
 dependencies {
-  compile 'com.arakelian:json-filter:3.1.0'
+  compile 'com.arakelian:json-filter:3.2.0'
 }
 ```
 
