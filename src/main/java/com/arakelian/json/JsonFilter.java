@@ -49,7 +49,7 @@ public class JsonFilter {
         @Override
         public boolean test(final CharSequence path) {
             // excludes are always processed first!
-            if (excludes != null) {
+            if (excludes != null && excludes.size() != 0) {
                 for (final String exclude : excludes) {
                     if (pathStartsWith(path, exclude, true)) {
                         return false;
@@ -58,7 +58,7 @@ public class JsonFilter {
             }
 
             // include when specifically asked to do so
-            if (includes != null) {
+            if (includes != null && includes.size() != 0) {
                 for (final String include : includes) {
                     if (pathStartsWith(path, include, false)) {
                         return true;
@@ -68,7 +68,7 @@ public class JsonFilter {
 
             // if client specified which fields to include, it must be on that
             // list; otherwise, everything included by default
-            return includes == null;
+            return includes == null || includes.size() == 0;
         }
 
         private boolean pathStartsWith(
@@ -165,7 +165,8 @@ public class JsonFilter {
         return true;
     }
 
-    public static CharSequence filter(final CharSequence json, final JsonFilterOptions options) throws IOException {
+    public static CharSequence filter(final CharSequence json, final JsonFilterOptions options)
+            throws IOException {
         if (json == null || json.length() == 0) {
             return json;
         }
@@ -190,7 +191,8 @@ public class JsonFilter {
         return buf.toString();
     }
 
-    private static CharSequence identityTransform(final CharSequence s, final boolean pretty) throws IOException {
+    private static CharSequence identityTransform(final CharSequence s, final boolean pretty)
+            throws IOException {
         if (isJsonObjectOrArray(s)) {
             final JsonFilterOptions opts = ImmutableJsonFilterOptions.builder() //
                     .identityTransform(true) //
