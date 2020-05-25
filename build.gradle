@@ -52,21 +52,21 @@ multitool {
 }
 
 dependencies {
-    processor 'org.immutables:value:2.8.3'
+    processor 'org.immutables:value:2.8.8'
     
     // annotations
-    compile 'org.immutables:value-annotations:2.8.3'
+    compile 'org.immutables:value-annotations:2.8.8'
 
     // we shadow Guava due to frequent downstream compatibility issues
-    shadow 'com.google.guava:guava:28.2-jre'
+    shadow 'com.google.guava:guava:29.0-jre'
 
     // configure errorprone version
     errorprone 'com.google.errorprone:error_prone_core:2.3.4'
 
     // logging
-    testCompile 'org.apache.logging.log4j:log4j-api:2.13.1'
-    testCompile 'org.apache.logging.log4j:log4j-core:2.13.1'
-    testCompile 'org.apache.logging.log4j:log4j-slf4j-impl:2.13.1'
+    testCompile 'org.apache.logging.log4j:log4j-api:2.13.3'
+    testCompile 'org.apache.logging.log4j:log4j-core:2.13.3'
+    testCompile 'org.apache.logging.log4j:log4j-slf4j-impl:2.13.3'
     testCompile 'org.slf4j:jcl-over-slf4j:1.7.29'
     testCompile 'org.slf4j:jul-to-slf4j:1.7.29'
     compile     'org.slf4j:slf4j-api:1.7.29'
