@@ -19,8 +19,8 @@ package com.arakelian.json;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class JsonFilterTest {
     @Test
@@ -189,6 +189,6 @@ public class JsonFilterTest {
     }
 
     private void assertEquals(final String expected, final CharSequence filter) {
-        Assert.assertEquals(expected, filter != null ? filter.toString() : null);
+        Assertions.assertEquals(expected, filter != null ? filter.toString() : null);
     }
 }

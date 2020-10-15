@@ -26,13 +26,13 @@ import static com.arakelian.json.JsonReader.JsonToken.NUMBER;
 import static com.arakelian.json.JsonReader.JsonToken.OBJECT_END;
 import static com.arakelian.json.JsonReader.JsonToken.OBJECT_START;
 import static com.arakelian.json.JsonReader.JsonToken.STRING;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.arakelian.json.JsonReader.JsonToken;
 
@@ -97,6 +97,6 @@ public class JsonReaderTest {
                 STRING, "five", ARRAY_START, STRING, "1", STRING, "2", STRING, "3", ARRAY_END, //
                 OBJECT_END };
         final Object[] actual = parse(json);
-        Assert.assertArrayEquals(expected, actual);
+        assertArrayEquals(expected, actual);
     }
 }
