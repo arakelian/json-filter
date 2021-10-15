@@ -30,7 +30,7 @@ plugins {
     id "io.codearte.nexus-staging" version "0.30.0"
 
     // for building fat jar
-    id "com.github.johnrengelman.shadow" version "7.0.0"
+    id "com.github.johnrengelman.shadow" version "7.1.0"
 }
 
 group   = 'com.arakelian'
@@ -45,9 +45,9 @@ wrapper {
 
 publishing.publications.mavenJava {
     pom {
-        name = "More Commons"
-        description = "Small utility classes useful in a variety of projects. Don't reinvent the wheel. Stay small."
-        url = "https://github.com/arakelian/more-commons"
+        name = "Json Filter"
+        description = "High-speed stream-based filtering of arbitrarily large JSON documents."
+        url = "https://github.com/arakelian/json-filter"
         
         licenses {
             license {
@@ -65,9 +65,9 @@ publishing.publications.mavenJava {
         }
         
         scm {
-            connection = 'scm:git:https://github.com/arakelian/more-commons.git'
-            developerConnection = 'scm:git:git@github.com:arakelian/more-commons.git'
-            url = 'https://github.com/arakelian/more-commons.git'
+            connection = 'scm:git:https://github.com/arakelian/json-filter.git'
+            developerConnection = 'scm:git:git@github.com:arakelian/json-filter.git'
+            url = 'https://github.com/arakelian/json-filter.git'
         }
     }
 }
@@ -82,7 +82,7 @@ dependencies {
     errorprone 'com.google.errorprone:error_prone_core:2.9.0'
 
     // we shadow Guava due to frequent downstream compatibility issues
-    shadow 'com.google.guava:guava:30.1.1-jre'
+    shadow 'com.google.guava:guava:31.0.1-jre'
 
     // logging
     testImplementation 'org.apache.logging.log4j:log4j-api:2.14.1'
@@ -93,7 +93,7 @@ dependencies {
     api                'org.slf4j:slf4j-api:1.7.32'
 
     // for unit testing
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
 }
 
 shadowJar {
