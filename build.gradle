@@ -43,6 +43,15 @@ wrapper {
 }
 
 publishing.publications.mavenJava {
+    from components.java
+    versionMapping {
+        usage('java-api') {
+            fromResolutionOf('runtimeClasspath')
+        }
+        usage('java-runtime') {
+            fromResolutionResult()
+        }
+    }
     pom {
         name = "Json Filter"
         description = "High-speed stream-based filtering of arbitrarily large JSON documents."
@@ -69,6 +78,14 @@ publishing.publications.mavenJava {
             url = 'https://github.com/arakelian/json-filter.git'
         }
     }
+	pom.withXml {
+		Node pomNode = asNode()
+		pomNode.dependencies.'*'.findAll() {
+		    it.artifactId.text() in [ 'value-annotations', 'guava', 'commons-io', 'commons-lang3' ]
+		}.each() {
+		    it.parent().remove(it)
+		}
+	}
 }
 
 dependencies {
