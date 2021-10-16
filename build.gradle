@@ -43,15 +43,6 @@ wrapper {
 }
 
 publishing.publications.mavenJava {
-    from components.java
-    versionMapping {
-        usage('java-api') {
-            fromResolutionOf('runtimeClasspath')
-        }
-        usage('java-runtime') {
-            fromResolutionResult()
-        }
-    }
     pom {
         name = "Json Filter"
         description = "High-speed stream-based filtering of arbitrarily large JSON documents."

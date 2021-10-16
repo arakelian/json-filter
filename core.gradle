@@ -10,30 +10,31 @@ buildscript {
 
 
 ext {
-	// useful macros, you can add your own
-	macros = [
-		'all' : [
-			'clean',
-			'classpath',
-			'build',
-			'minify',
-			'publishToMavenLocal'
-		],
-		'deploy' : [
-			'uploadArchives',
-			'closeAndReleaseRepository'
-		],
-		'classpath' : [
-			'cleanEclipseClasspath',
-			'eclipseClasspath',
-			'eclipseFactoryPath',
-			'cleanIdeaModule',
-			'ideaModule'
-		],
-	]
-	
-	// package patterns to exclude from Eclipse
-	excludeFromEclipse = []
+    // useful macros, you can add your own
+    macros = [
+        'all' : [
+            'clean',
+            'classpath',
+            'build',
+            'minify',
+            'generatePomFileForInternalPublication',    // needed to generate internal POM
+            'publishMavenJavaPublicationToMavenLocal'   // real publication to Maven Local (~/.m2/repository)
+        ],
+        'deploy' : [
+            'uploadArchives',
+            'closeAndReleaseRepository'
+        ],
+        'classpath' : [
+            'cleanEclipseClasspath',
+            'eclipseClasspath',
+            'eclipseFactoryPath',
+            'cleanIdeaModule',
+            'ideaModule'
+        ],
+    ]
+    
+    // package patterns to exclude from Eclipse
+    excludeFromEclipse = []
 }
 
 
@@ -55,8 +56,13 @@ task sourcesJar(type: Jar) {
 }
 
 task javadocJar(type: Jar, dependsOn: classes) {
-	from javadoc
-	classifier = 'javadoc'
+    from javadoc
+    classifier = 'javadoc'
+}
+
+task testsJar(type:Jar, dependsOn: testClasses) {
+    from sourceSets.test.output
+    classifier = 'tests'
 }
 
 test {
@@ -83,7 +89,7 @@ tasks.withType(JavaCompile) { task ->
     options.compilerArgs << '-Xlint:unchecked'
 
     if (project.plugins.hasPlugin('net.ltgt.errorprone')) {
-	    // Eclipse code formatting removes extraneous parenthesis which errorprone complains about
+        // Eclipse code formatting removes extraneous parenthesis which errorprone complains about
         options.errorprone.disable 'OperatorPrecedence'
         
         // we don't need to check return value always
@@ -114,11 +120,11 @@ if(plugins.hasPlugin("com.github.johnrengelman.shadow")) {
         classifier = "shadow"
     }
 
-	sourceSets {
-	    // shadow configuration is added by Shadow plugin, but it's only configured for the main sourceset
-	    test.compileClasspath += configurations.shadow
-	    test.runtimeClasspath += configurations.shadow
-	}
+    sourceSets {
+        // shadow configuration is added by Shadow plugin, but it's only configured for the main sourceset
+        test.compileClasspath += configurations.shadow
+        test.runtimeClasspath += configurations.shadow
+    }
 }
 
 
@@ -139,110 +145,142 @@ catch(ClassNotFoundException e) {
 if(hasProGuard) {
     println "ProGuard enabled"
     
-	task minify(type: proguard.gradle.ProGuardTask, dependsOn:shadowJar) {
-	    // Preserve the special static methods that are required in all enumeration classes.
-	    keepclassmembers allowoptimization:true, \
-	        'enum * { \
-	            <fields>; \
-	            public static **[] values(); \
-	            public static ** valueOf(java.lang.String); \
-	        }'
-	
-	    // Explicitly preserve all serialization members
-	    keepclassmembers \
-	        'class * implements java.io.Serializable { \
-	            static final long serialVersionUID; \
-	            static final java.io.ObjectStreamField[] serialPersistentFields; \
-	            private void writeObject(java.io.ObjectOutputStream); \
-	            private void readObject(java.io.ObjectInputStream); \
-	            java.lang.Object writeReplace(); \
-	            java.lang.Object readResolve(); \
-	        }'
-	
-		keepclasseswithmembernames includedescriptorclasses:true, 'class * { native <methods>; }'
-	
-		keepattributes 'Exceptions'
-		keepattributes 'InnerClasses'
-		keepattributes 'Signature'
-		keepattributes 'Deprecated'
-		keepattributes 'SourceFile'
-		keepattributes 'LineNumberTable'
-		keepattributes '*Annotation*'
-		keepattributes 'EnclosingMethod'
-	
-		// causes too many issues
-		dontoptimize
-		dontskipnonpubliclibraryclassmembers()
-		
-		// we're not interested in obfuscation, just code shrinking
-		dontobfuscate()
-	
-		// guava		
-		dontwarn 'sun.misc.Unsafe'
-	}
+    task minify(type: proguard.gradle.ProGuardTask, dependsOn:shadowJar) {
+        // Preserve the special static methods that are required in all enumeration classes.
+        keepclassmembers allowoptimization:true, \
+            'enum * { \
+                <fields>; \
+                public static **[] values(); \
+                public static ** valueOf(java.lang.String); \
+            }'
+    
+        // Explicitly preserve all serialization members
+        keepclassmembers \
+            'class * implements java.io.Serializable { \
+                static final long serialVersionUID; \
+                static final java.io.ObjectStreamField[] serialPersistentFields; \
+                private void writeObject(java.io.ObjectOutputStream); \
+                private void readObject(java.io.ObjectInputStream); \
+                java.lang.Object writeReplace(); \
+                java.lang.Object readResolve(); \
+            }'
+    
+        keepclasseswithmembernames includedescriptorclasses:true, 'class * { native <methods>; }'
+    
+        keepattributes 'Exceptions'
+        keepattributes 'InnerClasses'
+        keepattributes 'Signature'
+        keepattributes 'Deprecated'
+        keepattributes 'SourceFile'
+        keepattributes 'LineNumberTable'
+        keepattributes '*Annotation*'
+        keepattributes 'EnclosingMethod'
+    
+        // causes too many issues
+        dontoptimize
+        dontskipnonpubliclibraryclassmembers()
+        
+        // we're not interested in obfuscation, just code shrinking
+        dontobfuscate()
+    
+        // guava        
+        dontwarn 'sun.misc.Unsafe'
+    }
 
-	project.ext.libraryJars = { ->
-		// build list of shadowed artifacts (irrespective of version)
-		Set shadowedArtifacts = []
-		configurations.shadow.resolvedConfiguration.resolvedArtifacts.each { artifact ->
-		    def id =  artifact.name + ":" + artifact.classifier
-		    shadowedArtifacts.add id
-		}
-		
-		// ProGuard needs reference to JDK rt.jar
-		def javaHome = System.getProperty('java.home')
-		def jmods = project.fileTree (javaHome + "/jmods/") {
-		    include "java.*.jmod"
-		    exclude "java.se.jmod"
-		    exclude "java.se.ee.jmod"
-		    exclude "jdk.jdwp.agent"
-		}
-		
-		def libJars = []
-		libJars += jmods
-		
-		// ProGuard needs reference to jars that we didn't shadow
-		configurations.api.canBeResolved = true
-		configurations.api.resolvedConfiguration.resolvedArtifacts.each { artifact ->
-		    def id =  artifact.name + ":" + artifact.classifier
-		    if(!shadowedArtifacts.contains(id)) {
-		        libJars.add artifact.file
-		    }
-		}
-		
-		//println 'injars:  ' + shadowJar.archivePath
-		//println 'oujars:  ' + jar.archivePath
-		//println 'libjars: ' + libJars.join('\n         ')
-		return libJars
-	}
-	
+    project.ext.libraryJars = { ->
+        // build list of shadowed artifacts (irrespective of version)
+        Set shadowedArtifacts = []
+        configurations.shadow.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+            def id =  artifact.name + ":" + artifact.classifier
+            shadowedArtifacts.add id
+        }
+        
+        // ProGuard needs reference to JDK rt.jar
+        def javaHome = System.getProperty('java.home')
+        def jmods = project.fileTree (javaHome + "/jmods/") {
+            include "java.*.jmod"
+            exclude "java.se.jmod"
+            exclude "java.se.ee.jmod"
+            exclude "jdk.jdwp.agent"
+        }
+        
+        def libJars = []
+        libJars += jmods
+        
+        // ProGuard needs reference to jars that we didn't shadow
+        configurations.api.canBeResolved = true
+        configurations.api.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+            def id =  artifact.name + ":" + artifact.classifier
+            if(!shadowedArtifacts.contains(id)) {
+                libJars.add artifact.file
+            }
+        }
+        
+        //println 'injars:  ' + shadowJar.archivePath
+        //println 'oujars:  ' + jar.archivePath
+        //println 'libjars: ' + libJars.join('\n         ')
+        return libJars
+    }
+    
     project.ext.minifyJarFile = new File(jar.archivePath.getParentFile(), jar.archivePath.getName().replace("-original.jar",".jar"))
     
-	project.ext.minifyJar = artifacts.add('archives', project.ext.minifyJarFile) {
+    project.ext.minifyJar = artifacts.add('archives', project.ext.minifyJarFile) {
         type('jar')
         builtBy(minify)
     }
 
-	publishing {
-	    publications {
-            mavenJava(MavenPublication) {
-                artifact project.ext.minifyJar
-	            artifact sourcesJar
-	            artifact javadocJar
+    publishing {
+        publications {
+            // trick to capture dependencies
+            Node internalNode = null
+            internal(MavenPublication) {
+                from components.java
+                pom.withXml {
+                    internalNode = asNode()
+                }
             }
-	    }
-	}
+            
+            mavenJava(MavenPublication) {
+                // we DO NOT inherit from components.java because we don't want all the stuff that comes with it
+                artifact project.ext.minifyJar
+
+                // paste the dependencies into real POM
+                pom.withXml {
+                    Node pomNode = asNode()
+                    def dependencyNode = pomNode.appendNode("dependencies")
+                    dependencyNode.replaceNode(internalNode.dependencies)
+                }
+            }
+        }
+    }
 
 } else {
-	publishing {
-	    publications {
-	        mavenJava(MavenPublication) {           
-	            from components.java
-	            artifact sourcesJar
-	            artifact javadocJar
-	        }
-	    }
-	}
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {           
+                from components.java
+            }
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava {
+            artifact sourcesJar
+            artifact javadocJar
+            artifact testsJar
+
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+        }
+    }
 }
 
 
