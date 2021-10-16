@@ -1,6 +1,5 @@
 // json-filter
 
-
 buildscript {
     repositories {
         mavenCentral()
