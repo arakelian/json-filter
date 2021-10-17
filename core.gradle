@@ -20,6 +20,11 @@ ext {
             'generatePomFileForInternalPublication',    // needed to generate internal POM
             'publishMavenJavaPublicationToMavenLocal'   // real publication to Maven Local (~/.m2/repository)
         ],
+        'sonatype' : [
+            'generatePomFileForInternalPublication',
+            'publishMavenJavaPublicationToOssrhRepository',
+            'closeAndReleaseRepository'
+        ],
         'deploy' : [
             'uploadArchives',
             'closeAndReleaseRepository'
@@ -265,6 +270,19 @@ if(hasProGuard) {
 }
 
 publishing {
+    if(project.hasProperty('nexusUsername')) {
+        repositories {
+            maven {
+                name = "ossrh"
+                url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                credentials {
+                    username = project.nexusUsername
+                    password = project.nexusPassword
+                }
+            }
+        }
+    }
+
     publications {
         mavenJava {
             artifact sourcesJar
@@ -281,6 +299,14 @@ publishing {
             }
         }
     }
+}
+
+signing {
+    sign publishing.publications.mavenJava
+}
+
+nexusStaging {
+    repositoryDescription project.name
 }
 
 
