@@ -1,4 +1,6 @@
 # json-filter
+[![version](https://img.shields.io/maven-metadata/v.svg?label=release&metadataUrl=https://repo1.maven.org/maven2/com/arakelian/json-filter/maven-metadata.xml)](https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.arakelian%22%20AND%20a%3A%22json-filter%22)
+[![CI](https://github.com/arakelian/json-filter/actions/workflows/ci.yml/badge.svg)](https://github.com/arakelian/json-filter/actions/workflows/ci.yml)
 
 High-speed stream-based filtering of arbitrarily large JSON documents.
 
