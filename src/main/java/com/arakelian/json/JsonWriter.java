@@ -23,20 +23,27 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.arakelian.core.utils.DateUtils;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 
 /**
  * Fast JSON writer
  */
 public class JsonWriter<W extends Writer> implements Closeable {
-    private static enum CommaState {
-        BEFORE_FIRST, AFTER_KEY, AFTER_VALUE, AFTER_COMMA;
+    private static enum Container {
+        DOCUMENT, OBJECT, ARRAY;
     }
 
     private class JsonStringEscapingWriter extends FilterWriter {
@@ -74,6 +81,215 @@ public class JsonWriter<W extends Writer> implements Closeable {
         }
     }
 
+    private static enum Separator {
+        START, COMMA;
+    }
+
+    private final class State {
+        /** Depth **/
+        private final int depth;
+
+        /** What type of container **/
+        private Container container;
+
+        /** Number of items in container **/
+        private int size;
+
+        /** Copy of the last {@link CharSequence} passed to {@link #writeKey(Object)} **/
+        private char[] key;
+
+        /** Length of last {@link CharSequence} passed to {@link #writeKey(Object)}} **/
+        private int keyLen;
+
+        /** Required separator **/
+        private Separator separator;
+
+        /**
+         * Reference to last String passed to {@link #writeKey(Object)}. Will be null if a
+         * CharSequence was used instead.
+         **/
+        private String str;
+
+        public State(final int depth) {
+            this.depth = depth;
+        }
+
+        public void afterValue() {
+            separator = Separator.COMMA;
+            size++;
+        }
+
+        public void beforeValue() throws IOException {
+            if (container == Container.DOCUMENT) {
+                Preconditions.checkState(size == 0, "there can be only one root level value");
+            }
+            final boolean keyed = beforeValue(true);
+            switch (container) {
+            case DOCUMENT:
+            case ARRAY:
+                Preconditions.checkState(!keyed, "key value pairs only valid in object");
+                break;
+            case OBJECT:
+                Preconditions.checkState(keyed, "key value pairs only valid in object");
+                break;
+            }
+        }
+
+        private boolean beforeValue(final boolean flush) throws IOException {
+            if (depth != 0) {
+                state[depth - 1].beforeValue(true);
+            }
+
+            if (flush) {
+                writeSeparator();
+                return flushKey();
+            }
+            return false;
+        }
+
+        private boolean flushKey() throws IOException {
+            if (keyLen != 0) {
+                internalWriteEscapedString(key, 0, keyLen);
+                keyLen = 0;
+                // fall through
+            } else if (str != null) {
+                internalWriteEscapedString(str);
+                str = null;
+                // fall through
+            } else {
+                return false;
+            }
+
+            if (pretty) {
+                // space before colon matches Jackson
+                writer.write(" ");
+            }
+            writer.write(":");
+            if (pretty) {
+                writer.write(" ");
+            }
+            return true;
+        }
+
+        private final void nextLine() throws IOException {
+            nextLine(depth);
+        }
+
+        private final void nextLine(final int depth) throws IOException {
+            writeNewline();
+            if (pretty) {
+                for (int i = 0; i < depth; i++) {
+                    writer.write("  ");
+                }
+            }
+        }
+
+        public void reset(final Container container) {
+            this.container = Preconditions.checkNotNull(container);
+            size = 0;
+            keyLen = 0;
+            str = null;
+            separator = Separator.START;
+        }
+
+        public void startArray() {
+            reset(Container.ARRAY);
+        }
+
+        public void startObject() {
+            reset(Container.OBJECT);
+        }
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this) //
+                    .omitNullValues() //
+                    .add("depth", depth) //
+                    .add("container", container) //
+                    .add("size", size) //
+                    .toString();
+        }
+
+        public boolean writeEndArray() throws IOException {
+            Preconditions.checkState(container == Container.ARRAY, "No matching writeStartArray");
+            if (separator == Separator.START) {
+                // no values were written
+                if (skipEmpty) {
+                    return false;
+                }
+                beforeValue(false);
+                writer.write("[]");
+            } else {
+                nextLine(depth - 1);
+                writer.write(']');
+            }
+            return true;
+        }
+
+        public boolean writeEndObject() throws IOException {
+            Preconditions.checkState(container == Container.OBJECT, "No matching writeStartObject");
+            if (separator == Separator.START) {
+                // no key/value pairs were written
+                if (skipEmpty) {
+                    return false;
+                }
+                beforeValue(false);
+                writer.write("{}");
+            } else {
+                nextLine(depth - 1);
+                writer.write('}');
+            }
+            return true;
+        }
+
+        public final void writeKey(final Object key) {
+            Preconditions.checkState(container == Container.OBJECT, "key value pairs only valid in object");
+            if (key instanceof CharSequence) {
+                // we are trying hard to avoid allocating stings, so we will store the key
+                final CharSequence csq = (CharSequence) key;
+                final int length = csq.length();
+                final int capacity = this.key != null ? this.key.length : 0;
+                if (length > capacity) {
+                    // allocate memory to hold key in multiples of 128
+                    final int size = (length + 127) / 128 * 128;
+                    this.key = new char[size];
+                }
+
+                // copy source key
+                for (int i = 0; i < length; i++) {
+                    this.key[i] = csq.charAt(i);
+                }
+                this.keyLen = length;
+            } else {
+                // forced to use toString
+                this.str = String.valueOf(key);
+                this.keyLen = 0;
+            }
+        }
+
+        private void writeSeparator() throws IOException {
+            if (separator == Separator.START) {
+                switch (container) {
+                case ARRAY:
+                    writer.write('[');
+                    nextLine();
+                    break;
+                case OBJECT:
+                    writer.write('{');
+                    nextLine();
+                    break;
+                case DOCUMENT:
+                    Preconditions.checkState(keyLen == 0 && str == null, "Invalid JSON");
+                    break;
+                }
+            } else if (separator == Separator.COMMA) {
+                writer.write(',');
+                nextLine();
+            }
+            separator = null;
+        }
+    }
+
     /** When we encode strings, we always specify UTF8 encoding */
     private static final String UTF8_ENCODING = "UTF-8";
 
@@ -89,7 +305,7 @@ public class JsonWriter<W extends Writer> implements Closeable {
      * @param pretty
      *            true if pretty output
      * @param keysValues
-     *            list of alternating key-value pairs
+     *            ) list of alternating key-value pairs
      * @return a JSON object consisting of the given key value pairs
      */
     public static String keyValuesToString(final boolean pretty, final Object... keysValues) {
@@ -140,7 +356,8 @@ public class JsonWriter<W extends Writer> implements Closeable {
 
     private boolean pretty = true;
 
-    private final CommaState[] commaState = new CommaState[32];
+    @SuppressWarnings("unchecked")
+    private final State[] state = new JsonWriter.State[32];
 
     /** True to skip null values **/
     private boolean skipNulls = false;
@@ -157,9 +374,12 @@ public class JsonWriter<W extends Writer> implements Closeable {
         reset();
     }
 
-    private final JsonWriter<W> afterValue() {
-        this.commaState[indent] = CommaState.AFTER_VALUE;
-        return this;
+    private final void afterValue() {
+        this.state[indent].afterValue();
+    }
+
+    private final void beforeValue() throws IOException {
+        this.state[indent].beforeValue();
     }
 
     @Override
@@ -181,14 +401,6 @@ public class JsonWriter<W extends Writer> implements Closeable {
 
     public final W getWriter() {
         return writer;
-    }
-
-    private void indent() throws IOException {
-        if (pretty) {
-            for (int i = 0; i < indent; i++) {
-                writer.write("  ");
-            }
-        }
     }
 
     private final void internalWriteEscapedChar(final char ch) throws IOException {
@@ -227,14 +439,22 @@ public class JsonWriter<W extends Writer> implements Closeable {
         }
     }
 
+    private final void internalWriteEscapedString(final char[] chars, final int offset, final int length)
+            throws IOException {
+        writer.write('\"');
+        for (int i = offset; i < length; i++) {
+            final char ch = chars[i];
+            internalWriteEscapedChar(ch);
+        }
+        writer.write('\"');
+    }
+
     private final void internalWriteEscapedString(final CharSequence csq) throws IOException {
         writer.write('\"');
-
         for (int i = 0, len = csq != null ? csq.length() : 0; i < len; i++) {
             final char ch = csq.charAt(i);
             internalWriteEscapedChar(ch);
-        } // for
-
+        }
         writer.write('\"');
     }
 
@@ -346,14 +566,12 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return skipNulls;
     }
 
-    private final void nextLine() throws IOException {
-        writeNewline();
-        indent();
-    }
-
     public final void reset() {
         this.indent = 0;
-        this.commaState[indent] = CommaState.BEFORE_FIRST;
+        for (int depth = 0, length = state.length; depth < length; depth++) {
+            state[depth] = new State(depth);
+        }
+        this.state[0].reset(Container.DOCUMENT);
     }
 
     public final void setPretty(final boolean pretty) {
@@ -396,7 +614,7 @@ public class JsonWriter<W extends Writer> implements Closeable {
         if (data == null) {
             return writeNull();
         }
-        writeCommaBetweenValues();
+        beforeValue();
         writer.write('\"');
         try (final OutputStream os = BaseEncoding.base64()
                 .encodingStream(new JsonStringEscapingWriter(writer))) {
@@ -407,41 +625,65 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    public JsonWriter<W> writeBigDecimal(final BigDecimal val) throws IOException {
+        if (val == null) {
+            return writeNull();
+        }
+        writeChars(val.toPlainString());
+        return this;
+    }
+
     public final JsonWriter<W> writeBoolean(final boolean val) throws IOException {
         writeChars(val ? "true" : "false");
         return this;
     }
 
+    public final JsonWriter<W> writeBoolean(final Boolean val) throws IOException {
+        if (val == null) {
+            return writeNull();
+        }
+        writeChars(val.booleanValue() ? "true" : "false");
+        return this;
+    }
+
     private final void writeChars(final CharSequence csq) throws IOException {
-        writeCommaBetweenValues();
+        beforeValue();
         for (int i = 0, length = csq.length(); i < length; i++) {
             writer.write(csq.charAt(i));
         }
         afterValue();
     }
 
-    /**
-     * Commas are automatically inserted and therefore this method is private
-     **/
-    private final JsonWriter<W> writeComma() throws IOException {
-        writer.write(',');
-        nextLine();
-        this.commaState[indent] = CommaState.AFTER_VALUE;
+    public final JsonWriter<W> writeDate(final Date val) throws IOException {
+        return writeDate(DateUtils.toZonedDateTimeUtc(val));
+    }
+
+    public final JsonWriter<W> writeDate(final Instant val) throws IOException {
+        return writeDate(DateUtils.toZonedDateTimeUtc(val));
+    }
+
+    public final JsonWriter<W> writeDate(final ZonedDateTime val) throws IOException {
+        final String iso = DateUtils.toStringIsoFormat(val);
+        writeString(iso);
         return this;
     }
 
-    /** Determines if comma is needed here and automatically inserts one **/
-    private final void writeCommaBetweenValues() throws IOException {
-        final CommaState state = this.commaState[indent];
-        if (state == CommaState.AFTER_VALUE) {
-            writeComma();
+    public final JsonWriter<W> writeDouble(final double val) throws IOException {
+        if (Double.isInfinite(val) || Double.isNaN(val)) {
+            return writeNull();
         }
+
+        final StringBuilder buf = new StringBuilder();
+        buf.append(val);
+        writeChars(buf);
+        return this;
     }
 
     public final JsonWriter<W> writeDouble(final Double val) throws IOException {
-        if (val.isInfinite() || val.isNaN()) {
+        if (val == null || val.isInfinite() || val.isNaN()) {
             return writeNull();
         }
+
         final StringBuilder buf = new StringBuilder();
         buf.append(val);
         writeChars(buf);
@@ -449,47 +691,45 @@ public class JsonWriter<W extends Writer> implements Closeable {
     }
 
     public final JsonWriter<W> writeEndArray() throws IOException {
-        this.commaState[--indent] = CommaState.AFTER_VALUE;
-        nextLine();
-        writer.write(']');
-        afterValue();
+        final boolean notEmpty = this.state[indent--].writeEndArray();
+        if (notEmpty) {
+            afterValue();
+        }
         return this;
     }
 
     public final JsonWriter<W> writeEndObject() throws IOException {
-        this.commaState[--indent] = CommaState.AFTER_VALUE;
-        nextLine();
-        writer.write('}');
-        afterValue();
+        final boolean notEmpty = this.state[indent--].writeEndObject();
+        if (notEmpty) {
+            afterValue();
+        }
         return this;
     }
 
-    public final JsonWriter<W> writeFloat(final Float val) throws IOException {
-        if (val.isInfinite() || val.isNaN()) {
+    public final JsonWriter<W> writeFloat(final float val) throws IOException {
+        if (Float.isInfinite(val) || Float.isNaN(val)) {
             return writeNull();
         }
+
         final StringBuilder buf = new StringBuilder();
         buf.append(val);
         writeChars(buf);
         return this;
     }
 
-    public final JsonWriter<W> writeKey(final Object key) throws IOException {
-        writeCommaBetweenValues();
-        if (key instanceof CharSequence) {
-            internalWriteEscapedString((CharSequence) key);
-        } else {
-            internalWriteEscapedString(String.valueOf(key));
+    public final JsonWriter<W> writeFloat(final Float val) throws IOException {
+        if (val == null || val.isInfinite() || val.isNaN()) {
+            return writeNull();
         }
-        if (pretty) {
-            // space before colon matches Jackson
-            writer.write(" ");
-        }
-        writer.write(":");
-        if (pretty) {
-            writer.write(" ");
-        }
-        this.commaState[indent] = CommaState.AFTER_KEY;
+
+        final StringBuilder buf = new StringBuilder();
+        buf.append(val);
+        writeChars(buf);
+        return this;
+    }
+
+    public final JsonWriter<W> writeKey(final Object key) {
+        this.state[indent].writeKey(key);
         return this;
     }
 
@@ -516,6 +756,9 @@ public class JsonWriter<W extends Writer> implements Closeable {
         if (collection == null) {
             return writeNull();
         }
+        if (skipEmpty && collection.size() == 0) {
+            return this;
+        }
 
         final Iterator it = collection.iterator();
 
@@ -536,6 +779,9 @@ public class JsonWriter<W extends Writer> implements Closeable {
         if (objects == null) {
             return writeNull();
         }
+        if (skipEmpty && objects.length == 0) {
+            return this;
+        }
 
         writeStartArray();
         for (int i = 0; i < objects.length; i++) {
@@ -553,6 +799,9 @@ public class JsonWriter<W extends Writer> implements Closeable {
     public final JsonWriter<W> writeMap(final Map map) throws IOException {
         if (map == null) {
             return writeNull();
+        }
+        if (skipEmpty && map.size() == 0) {
+            return this;
         }
 
         final Iterator it = map.entrySet().iterator();
@@ -575,9 +824,20 @@ public class JsonWriter<W extends Writer> implements Closeable {
     }
 
     public final JsonWriter<W> writeNull() throws IOException {
-        writeCommaBetweenValues();
+        if (skipEmpty || skipNulls) {
+            return this;
+        }
+
+        beforeValue();
         writer.write("null");
         afterValue();
+        return this;
+    }
+
+    public final JsonWriter<W> writeNumber(final int val) throws IOException {
+        final StringBuilder buf = new StringBuilder();
+        buf.append(val);
+        writeChars(buf);
         return this;
     }
 
@@ -589,6 +849,10 @@ public class JsonWriter<W extends Writer> implements Closeable {
     }
 
     public final JsonWriter<W> writeNumber(final Number val) throws IOException {
+        if (val == null) {
+            return writeNull();
+        }
+
         if (val instanceof Double) {
             final Double d = (Double) val;
             return writeDouble(d);
@@ -599,80 +863,100 @@ public class JsonWriter<W extends Writer> implements Closeable {
             return writeFloat(f);
         }
 
+        if (val instanceof BigDecimal) {
+            final BigDecimal bd = (BigDecimal) val;
+            return writeBigDecimal(bd);
+        }
+
         writeNumber(val.longValue());
         return this;
     }
 
-    public final JsonWriter<W> writeObject(final Object value) throws IOException {
-        if (value == null) {
+    public final JsonWriter<W> writeObject(final Object val) throws IOException {
+        if (val == null) {
             return writeNull();
         }
 
-        if (value instanceof CharSequence) {
-            writeString((CharSequence) value);
+        if (val instanceof CharSequence) {
+            writeString((CharSequence) val);
             return this;
         }
 
-        if (value instanceof Number) {
-            final Number val = (Number) value;
-            return writeNumber(val);
+        if (val instanceof Number) {
+            final Number n = (Number) val;
+            return writeNumber(n);
         }
 
-        if (value instanceof Boolean) {
-            final boolean val = ((Boolean) value).booleanValue();
-            return writeBoolean(val);
+        if (val instanceof Boolean) {
+            final Boolean b = (Boolean) val;
+            return writeBoolean(b);
         }
 
-        if (value instanceof Map) {
-            return writeMap((Map) value);
+        if (val instanceof Map) {
+            return writeMap((Map) val);
         }
 
-        if (value instanceof Collection) {
-            return writeList((Collection) value);
+        if (val instanceof Collection) {
+            return writeList((Collection) val);
         }
 
-        if (value instanceof byte[]) {
-            return writeBase64String((byte[]) value);
+        if (val instanceof Date) {
+            final Date d = (Date) val;
+            return writeDate(d);
+        }
+        if (val instanceof Instant) {
+            final Instant i = (Instant) val;
+            return writeDate(i);
+        }
+        if (val instanceof ZonedDateTime) {
+            final ZonedDateTime zdt = (ZonedDateTime) val;
+            return writeDate(zdt);
         }
 
-        if (value instanceof Object[]) {
-            return writeList((Object[]) value);
+        if (val instanceof byte[]) {
+            return writeBase64String((byte[]) val);
         }
 
-        writeString(value.toString());
+        if (val instanceof Object[]) {
+            return writeList((Object[]) val);
+        }
+
+        writeString(val.toString());
         return this;
     }
 
-    public final JsonWriter<W> writeStartArray() throws IOException {
-        writeCommaBetweenValues();
-        this.commaState[++indent] = CommaState.BEFORE_FIRST;
-        writer.write('[');
-        nextLine();
+    public final JsonWriter<W> writeStartArray() {
+        this.state[++indent].startArray();
         return this;
     }
 
-    public final JsonWriter<W> writeStartObject() throws IOException {
-        writeCommaBetweenValues();
-        this.commaState[++indent] = CommaState.BEFORE_FIRST;
-        writer.write('{');
-        nextLine();
+    public final JsonWriter<W> writeStartObject() {
+        this.state[++indent].startObject();
         return this;
     }
 
-    public final void writeString(final CharSequence csq) throws IOException {
-        writeCommaBetweenValues();
+    public final JsonWriter<W> writeString(final CharSequence csq) throws IOException {
+        if (csq == null) {
+            return writeNull();
+        }
+        if (skipEmpty && csq.length() == 0) {
+            return this;
+        }
+
+        beforeValue();
         internalWriteEscapedString(csq);
         afterValue();
+        return this;
     }
 
-    public final JsonWriter<W> writeUnescapedString(final Object key) throws IOException {
-        writeCommaBetweenValues();
-        if (key instanceof CharSequence) {
+    public final JsonWriter<W> writeUnescapedString(final Object val) throws IOException {
+        beforeValue();
+        if (val instanceof CharSequence) {
             // we can avoid toString
-            final CharSequence csq = (CharSequence) key;
+            final CharSequence csq = (CharSequence) val;
             internalWriteUnescapedString(csq);
         } else {
-            final String csq = key != null ? key.toString() : "";
+            final String csq = val != null ? val.toString() : "";
             internalWriteUnescapedString(csq);
         }
         afterValue();
