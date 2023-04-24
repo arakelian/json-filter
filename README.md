@@ -121,7 +121,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>com.arakelian</groupId>
     <artifactId>json-filter</artifactId>
-    <version>4.0.0</version>
+    <version>4.0.1</version>
     <scope>compile</scope>
 </dependency>
 ```
@@ -136,7 +136,7 @@ repositories {
 }
 
 dependencies {
-  compile 'com.arakelian:json-filter:4.0.0'
+  compile 'com.arakelian:json-filter:4.0.1'
 }
 ```
 
