@@ -28,6 +28,9 @@ import org.immutables.value.Value;
  */
 @Value.Immutable(copy = false)
 public abstract class JsonFilterOptions {
+    /** Constructs a new {@code JsonFilterOptions}. */
+    protected JsonFilterOptions() {
+    }
     /**
      * Returns the optional callback for custom processing during filtering.
      *

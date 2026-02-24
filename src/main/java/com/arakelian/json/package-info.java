@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+/**
+ * Provides high-speed stream-based filtering and serialization of JSON documents.
+ */
 @Value.Style(get = { "is*", "get*" })
 package com.arakelian.json;
 

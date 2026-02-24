@@ -1,22 +1,5 @@
 
 ext {
-    // useful macros, you can add your own
-    macros = [
-        'all' : [
-            'clean',
-            'classpath',
-            'build',
-            'publishToMavenLocal'
-        ],
-        'classpath' : [
-            'cleanEclipseClasspath',
-            'eclipseClasspath',
-            'eclipseFactoryPath',
-            'cleanIdeaModule',
-            'ideaModule'
-        ],
-    ]
-
     // package patterns to exclude from Eclipse
     excludeFromEclipse = []
 }
@@ -41,13 +24,21 @@ tasks.named('test') {
 
 
 // -------------------------------------------
+//  JAVA TOOLCHAIN
+// -------------------------------------------
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+
+// -------------------------------------------
 //  JAVA COMPILER
 // -------------------------------------------
 
-tasks.withType(JavaCompile).configureEach { task ->
-    sourceCompatibility = 21
-    targetCompatibility = 21
-
+tasks.withType(JavaCompile).configureEach {
     // always UTF-8
     options.encoding = 'UTF-8'
 
@@ -163,45 +154,60 @@ eclipse {
 
 
 // -------------------------------------------
+//  ECLIPSE FACTORY PATH (for annotation processing)
+// -------------------------------------------
+
+tasks.register('eclipseFactoryPath') {
+    description = 'Generates the .factorypath file for Eclipse annotation processing'
+
+    doLast {
+        def factorypath = new File(projectDir, '.factorypath')
+        factorypath.withWriter { writer ->
+            writer.writeLine '<?xml version="1.0" encoding="UTF-8"?>'
+            writer.writeLine '<factorypath>'
+            configurations.annotationProcessor.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+                writer.writeLine "    <factorypathentry kind=\"EXTJAR\" id=\"${artifact.file.absolutePath}\" enabled=\"true\" runInBatchMode=\"false\" />"
+            }
+            writer.writeLine '</factorypath>'
+        }
+        println "Generated ${factorypath}"
+    }
+}
+
+
+// -------------------------------------------
 //  README
 // -------------------------------------------
 
 tasks.register('readme') {
     doLast {
-        ant.replaceregexp(match:'\\<version\\>([0-9\\.]+)\\<\\/version\\>', replace:"<version>${version}</version>", flags:'g', byline:true) {
-            fileset(dir: '.', includes: 'README.md')
-        }
-        ant.replaceregexp(match:'com\\.arakelian\\:' + project.name + ':([0-9\\.]+)', replace:"com.arakelian:${project.name}:${version}", flags:'g', byline:true) {
-            fileset(dir: '.', includes: 'README.md')
-        }
+        def readmeFile = file('README.md')
+        def content = readmeFile.text
+        content = content.replaceAll(/<version>[0-9.]+<\/version>/, "<version>${version}</version>")
+        content = content.replaceAll("com\\.arakelian:" + project.name + ":[0-9.]+", "com.arakelian:${project.name}:${version}")
+        readmeFile.text = content
     }
 }
 
 
 // -------------------------------------------
-//  SHORTCUT TASKS
+//  LIFECYCLE TASKS
 // -------------------------------------------
 
-
-// This code allows us to define aliases, such as "all", so that when we do "gradle all",
-// we can substitute in a series of other gradle tasks
-// see: https://caffeineinduced.wordpress.com/2015/01/25/run-a-list-of-gradle-tasks-in-specific-order/
-def newTasks = []
-
-// gradle respects ordering of tasks specified on command line, so we replace shortcuts
-// with equivalent commands as though they were specified by user
-gradle.startParameter.taskNames.each { param ->
-    def macro = project.ext.macros[param]
-    if( macro ) {
-        macro.each { task ->
-            if(project.tasks.names.contains(task)) {
-                newTasks << task
-            }
-        }
-    } else {
-        newTasks << param
-    }
+tasks.register('classpath') {
+    dependsOn 'cleanEclipseClasspath', 'eclipseClasspath',
+              'eclipseFactoryPath', 'cleanIdeaModule', 'ideaModule'
 }
 
-// replace command line arguments
-gradle.startParameter.taskNames = newTasks.flatten()
+// ensure clean tasks run before generate tasks
+tasks.named('eclipseClasspath') { mustRunAfter 'cleanEclipseClasspath' }
+tasks.named('ideaModule') { mustRunAfter 'cleanIdeaModule' }
+
+tasks.register('all') {
+    dependsOn 'clean', 'classpath', 'build', 'publishToMavenLocal'
+}
+
+// ensure proper execution order
+tasks.named('classpath') { mustRunAfter 'clean' }
+tasks.named('build') { mustRunAfter 'classpath' }
+tasks.named('publishToMavenLocal') { mustRunAfter 'build' }
