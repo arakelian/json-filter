@@ -22,33 +22,77 @@ import java.util.Set;
 
 import org.immutables.value.Value;
 
+/**
+ * Immutable configuration options for {@link JsonFilter}, specifying which fields to include or
+ * exclude, whether to pretty-print the output, and an optional callback for custom processing.
+ */
 @Value.Immutable(copy = false)
 public abstract class JsonFilterOptions {
+    /**
+     * Returns the optional callback for custom processing during filtering.
+     *
+     * @return the callback, or {@code null} if none
+     */
     @Nullable
     public abstract JsonFilterCallback getCallback();
 
+    /**
+     * Returns the set of field paths to exclude from the output.
+     *
+     * @return the set of excluded paths, or {@code null} if none
+     */
     @Nullable
     public abstract Set<String> getExcludes();
 
+    /**
+     * Returns the set of field paths to include in the output.
+     *
+     * @return the set of included paths, or {@code null} if none
+     */
     @Nullable
     public abstract Set<String> getIncludes();
 
+    /**
+     * Returns an optional flag indicating whether the output should be pretty-printed.
+     *
+     * @return an {@link Optional} containing the pretty-print flag
+     */
     public abstract Optional<Boolean> getPretty();
 
+    /**
+     * Returns {@code true} if a callback has been configured.
+     *
+     * @return {@code true} if a callback is set
+     */
     public final boolean hasCallback() {
         return getCallback() != null;
     }
 
+    /**
+     * Returns {@code true} if any exclude paths have been configured.
+     *
+     * @return {@code true} if excludes are set
+     */
     public final boolean hasExcludes() {
         final Set<String> excludes = getExcludes();
         return excludes != null && excludes.size() != 0;
     }
 
+    /**
+     * Returns {@code true} if any include paths have been configured.
+     *
+     * @return {@code true} if includes are set
+     */
     public final boolean hasIncludes() {
         final Set<String> includes = getIncludes();
         return includes != null && includes.size() != 0;
     }
 
+    /**
+     * Returns {@code true} if no includes, excludes, or callback have been configured.
+     *
+     * @return {@code true} if no filtering options are set
+     */
     public final boolean isEmpty() {
         return !hasIncludes() && !hasExcludes() && !hasCallback();
     }

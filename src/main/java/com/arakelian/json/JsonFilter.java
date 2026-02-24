@@ -34,6 +34,10 @@ import com.google.common.base.Preconditions;
  * where only a small number of fields may actually be used.
  */
 public class JsonFilter {
+    /**
+     * Predicate that tests whether a given JSON field path should be included in the output based
+     * on the configured include and exclude patterns.
+     */
     private static final class PathPredicate implements Predicate<CharSequence> {
         /** Path patterns which are included **/
         private final Set<String> includes;
@@ -165,6 +169,15 @@ public class JsonFilter {
         return true;
     }
 
+    /**
+     * Filters the given JSON string according to the specified options, returning a new JSON string
+     * with only the included fields.
+     *
+     * @param json    the input JSON string
+     * @param options the filtering options specifying includes, excludes, and formatting
+     * @return the filtered JSON string, or the original string if no filtering is needed
+     * @throws IOException if the JSON is invalid or an I/O error occurs
+     */
     public static CharSequence filter(final CharSequence json, final JsonFilterOptions options)
             throws IOException {
         if (json == null || json.length() == 0) {
@@ -298,6 +311,13 @@ public class JsonFilter {
      */
     private final JsonWriter writer;
 
+    /**
+     * Constructs a new {@code JsonFilter} with the given reader, writer, and options.
+     *
+     * @param reader  the JSON reader to read input from
+     * @param writer  the JSON writer to write filtered output to
+     * @param options the filtering options specifying includes, excludes, and formatting
+     */
     public JsonFilter(final JsonReader reader, final JsonWriter writer, final JsonFilterOptions options) {
         Preconditions.checkArgument(reader != null, "reader must be non-null");
         Preconditions.checkArgument(writer != null, "writer must be non-null");
@@ -309,22 +329,49 @@ public class JsonFilter {
         this.predicate = new PathPredicate(options.getIncludes(), options.getExcludes());
     }
 
+    /**
+     * Returns the current field path being processed.
+     *
+     * @return the current field path
+     */
     public CharSequence getCurrentPath() {
         return currentPath;
     }
 
+    /**
+     * Returns the current nesting depth within the JSON document.
+     *
+     * @return the current nesting depth
+     */
     public final int getDepth() {
         return depth;
     }
 
+    /**
+     * Returns the filtering options used by this filter.
+     *
+     * @return the filtering options
+     */
     public final JsonFilterOptions getOptions() {
         return options;
     }
 
+    /**
+     * Returns the JSON writer used by this filter.
+     *
+     * @return the JSON writer
+     */
     public final JsonWriter getWriter() {
         return writer;
     }
 
+    /**
+     * Processes the input JSON, applying the configured filtering rules and writing the result to
+     * the output writer.
+     *
+     * @return this filter instance for chaining
+     * @throws IOException if the JSON is invalid or an I/O error occurs
+     */
     public JsonFilter process() throws IOException {
         depth = 0;
         JsonToken token = reader.nextEvent();

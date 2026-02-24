@@ -36,6 +36,9 @@ import org.junit.jupiter.api.Test;
 
 import com.arakelian.json.JsonReader.JsonToken;
 
+/**
+ * Tests for {@link JsonReader}, verifying correct tokenization and parsing of JSON input.
+ */
 public class JsonReaderTest {
     private Object[] parse(final String json) throws IOException {
         final List<Object> tokens = new ArrayList<>();

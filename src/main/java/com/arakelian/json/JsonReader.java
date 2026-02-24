@@ -20,13 +20,29 @@ package com.arakelian.json;
 import java.io.IOException;
 import java.io.Reader;
 
+/**
+ * High-performance streaming JSON reader that minimizes memory allocations by operating directly on
+ * character buffers. Supports reading from {@link CharSequence}, {@link Reader}, or raw character
+ * arrays.
+ */
 public final class JsonReader {
+    /**
+     * Exception thrown when an error is encountered while parsing JSON input.
+     */
     public static class JsonParseException extends IOException {
+        /**
+         * Constructs a new parse exception with the given message.
+         *
+         * @param msg the detail message
+         */
         public JsonParseException(final String msg) {
             super(msg);
         }
     }
 
+    /**
+     * Enumeration of JSON token types that can be encountered during parsing.
+     */
     public enum JsonToken {
         // Event indicating a JSON string value, including member names of objects
         STRING,
@@ -146,6 +162,13 @@ public final class JsonReader {
     /** current state while reading a number **/
     private int numberState;
 
+    /**
+     * Constructs a reader that reads from the given character array.
+     *
+     * @param data  the character array containing JSON
+     * @param start the start index (inclusive)
+     * @param end   the end index (exclusive)
+     */
     public JsonReader(final char[] data, final int start, final int end) {
         this.in = null;
         this.buf = data;
@@ -153,21 +176,44 @@ public final class JsonReader {
         this.end = end;
     }
 
+    /**
+     * Constructs a reader that reads from the given {@link Reader} with a default buffer size.
+     *
+     * @param in the reader to obtain JSON data from
+     */
     public JsonReader(final Reader in) {
         // 8192 matches the default buffer size of a BufferedReader so double
         // buffering of the data is avoided.
         this(in, new char[8192]);
     }
 
+    /**
+     * Constructs a reader that reads from the given {@link Reader} using the specified buffer.
+     *
+     * @param in     the reader to obtain JSON data from
+     * @param buffer the buffer to use for reading
+     */
     public JsonReader(final Reader in, final char[] buffer) {
         this.in = in;
         this.buf = buffer;
     }
 
+    /**
+     * Constructs a reader that reads from the given {@link CharSequence}.
+     *
+     * @param data the character sequence containing JSON
+     */
     public JsonReader(final CharSequence data) {
         this(data, 0, data.length());
     }
 
+    /**
+     * Constructs a reader that reads from a subsequence of the given {@link CharSequence}.
+     *
+     * @param data  the character sequence containing JSON
+     * @param start the start index (inclusive)
+     * @param end   the end index (exclusive)
+     */
     public JsonReader(final CharSequence data, final int start, final int end) {
         this.in = null;
         this.start = start;
@@ -453,6 +499,11 @@ public final class JsonReader {
         }
     }
 
+    /**
+     * Returns the current position in the input stream.
+     *
+     * @return the current position
+     */
     public long getPosition() {
         return gpos + start;
     }
@@ -521,6 +572,11 @@ public final class JsonReader {
         return Character.isWhitespace(ch) || ch == 0x00a0;
     }
 
+    /**
+     * Returns the most recently read token.
+     *
+     * @return the last token read
+     */
     public JsonToken lastEvent() {
         return event;
     }
@@ -996,11 +1052,20 @@ public final class JsonReader {
         return "start=" + start + ",end=" + end + ",state=" + state + "valstate=" + valueState;
     }
 
+    /**
+     * Returns {@code true} if the last string read was an object member name (key).
+     *
+     * @return {@code true} if the last string was a key
+     */
     public boolean wasKey() {
         return state == ParserState.DID_MEMNAME;
     }
 }
 
+/**
+ * A no-op character array that discards all writes. Used internally by {@link JsonReader} to skip
+ * over values without allocating memory.
+ */
 class NullCharArr extends SimpleCharArr {
     public NullCharArr() {
         super(new char[1], 0, 0);
@@ -1028,6 +1093,10 @@ class NullCharArr extends SimpleCharArr {
     }
 }
 
+/**
+ * A simple, resizable character array that implements {@link CharSequence}. Used internally by
+ * {@link JsonReader} as a lightweight buffer to avoid unnecessary {@link String} allocations.
+ */
 class SimpleCharArr implements CharSequence {
     protected char[] buf;
     protected int start;

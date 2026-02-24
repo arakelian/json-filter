@@ -39,7 +39,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 
 /**
- * Fast JSON writer
+ * High-performance JSON writer that serializes Java objects to JSON with support for pretty-printing
+ * and options to skip null or empty values. Operates on any {@link Writer} implementation and
+ * minimizes intermediate {@link String} allocations.
+ *
+ * @param <W> the type of {@link Writer} to write JSON output to
  */
 public class JsonWriter<W extends Writer> implements Closeable {
     private static enum Container {
@@ -365,10 +369,18 @@ public class JsonWriter<W extends Writer> implements Closeable {
     /** True to skip empty values **/
     private boolean skipEmpty = false;
 
+    /**
+     * Constructs a new {@code JsonWriter} with no underlying writer set.
+     */
     public JsonWriter() {
         reset();
     }
 
+    /**
+     * Constructs a new {@code JsonWriter} that writes to the given writer.
+     *
+     * @param writer the writer to output JSON to
+     */
     public JsonWriter(final W writer) {
         setWriter(writer);
         reset();
@@ -486,6 +498,13 @@ public class JsonWriter<W extends Writer> implements Closeable {
         }
     }
 
+    /**
+     * Returns {@code true} if the given value is considered empty. Null values, empty strings, empty
+     * collections, empty maps, and non-finite floating point values are considered empty.
+     *
+     * @param value the value to test
+     * @return {@code true} if the value is empty
+     */
     public final boolean isEmpty(final Object value) {
         if (value == null) {
             return true;
@@ -610,6 +629,13 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Writes the given byte array as a Base64-encoded JSON string value.
+     *
+     * @param data the byte array to encode, or {@code null} to write a JSON null
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeBase64String(final byte[] data) throws IOException {
         if (data == null) {
             return writeNull();
@@ -625,6 +651,14 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Writes the given {@link BigDecimal} as a JSON number value using its plain string
+     * representation.
+     *
+     * @param val the value to write, or {@code null} to write a JSON null
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public JsonWriter<W> writeBigDecimal(final BigDecimal val) throws IOException {
         if (val == null) {
             return writeNull();
@@ -633,11 +667,26 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Writes the given boolean as a JSON boolean value.
+     *
+     * @param val the boolean value
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeBoolean(final boolean val) throws IOException {
         writeChars(val ? "true" : "false");
         return this;
     }
 
+    /**
+     * Writes the given {@link Boolean} as a JSON boolean value, or a JSON null if the value is
+     * {@code null}.
+     *
+     * @param val the boolean value, or {@code null} to write a JSON null
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeBoolean(final Boolean val) throws IOException {
         if (val == null) {
             return writeNull();
@@ -654,14 +703,35 @@ public class JsonWriter<W extends Writer> implements Closeable {
         afterValue();
     }
 
+    /**
+     * Writes the given {@link Date} as an ISO-8601 formatted JSON string in UTC.
+     *
+     * @param val the date value
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeDate(final Date val) throws IOException {
         return writeDate(DateUtils.toZonedDateTimeUtc(val));
     }
 
+    /**
+     * Writes the given {@link Instant} as an ISO-8601 formatted JSON string in UTC.
+     *
+     * @param val the instant value
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeDate(final Instant val) throws IOException {
         return writeDate(DateUtils.toZonedDateTimeUtc(val));
     }
 
+    /**
+     * Writes the given {@link ZonedDateTime} as an ISO-8601 formatted JSON string.
+     *
+     * @param val the zoned date time value
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeDate(final ZonedDateTime val) throws IOException {
         final String iso = DateUtils.toStringIsoFormat(val);
         writeString(iso);
@@ -690,6 +760,12 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Writes the end of the current JSON array.
+     *
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeEndArray() throws IOException {
         final boolean notEmpty = this.state[indent--].writeEndArray();
         if (notEmpty) {
@@ -698,6 +774,12 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Writes the end of the current JSON object.
+     *
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeEndObject() throws IOException {
         final boolean notEmpty = this.state[indent--].writeEndObject();
         if (notEmpty) {
@@ -728,11 +810,25 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Sets the key for the next value to be written within a JSON object.
+     *
+     * @param key the key name
+     * @return this writer for chaining
+     */
     public final JsonWriter<W> writeKey(final Object key) {
         this.state[indent].writeKey(key);
         return this;
     }
 
+    /**
+     * Writes a key-value pair where the value is written without JSON string escaping.
+     *
+     * @param key   the key name
+     * @param value the value to write unescaped
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeKeyUnescapedValue(final Object key, final Object value)
             throws IOException {
         if (skipEmpty && isEmpty(value) || skipNulls && isNull(value)) {
@@ -743,6 +839,14 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Writes a key-value pair within a JSON object.
+     *
+     * @param key   the key name
+     * @param value the value to write
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeKeyValue(final Object key, final Object value) throws IOException {
         if (skipEmpty && isEmpty(value) || skipNulls && isNull(value)) {
             return this;
@@ -752,6 +856,13 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Writes the given {@link Collection} as a JSON array.
+     *
+     * @param collection the collection to write, or {@code null} to write a JSON null
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeList(final Collection collection) throws IOException {
         if (collection == null) {
             return writeNull();
@@ -775,6 +886,13 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Writes the given array of objects as a JSON array.
+     *
+     * @param objects the objects to write, or {@code null} to write a JSON null
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeList(final Object... objects) throws IOException {
         if (objects == null) {
             return writeNull();
@@ -796,6 +914,13 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Writes the given {@link Map} as a JSON object.
+     *
+     * @param map the map to write, or {@code null} to write a JSON null
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeMap(final Map map) throws IOException {
         if (map == null) {
             return writeNull();
@@ -823,6 +948,12 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Writes a JSON null value. If skip-nulls or skip-empty is enabled, the null may be suppressed.
+     *
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeNull() throws IOException {
         if (skipEmpty || skipNulls) {
             return this;
@@ -872,6 +1003,14 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Writes the given Java object as the appropriate JSON type, dispatching based on the object's
+     * runtime type.
+     *
+     * @param val the object to write, or {@code null} to write a JSON null
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeObject(final Object val) throws IOException {
         if (val == null) {
             return writeNull();
@@ -925,16 +1064,33 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Begins writing a new JSON array.
+     *
+     * @return this writer for chaining
+     */
     public final JsonWriter<W> writeStartArray() {
         this.state[++indent].startArray();
         return this;
     }
 
+    /**
+     * Begins writing a new JSON object.
+     *
+     * @return this writer for chaining
+     */
     public final JsonWriter<W> writeStartObject() {
         this.state[++indent].startObject();
         return this;
     }
 
+    /**
+     * Writes the given {@link CharSequence} as a properly escaped JSON string value.
+     *
+     * @param csq the string to write, or {@code null} to write a JSON null
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeString(final CharSequence csq) throws IOException {
         if (csq == null) {
             return writeNull();
@@ -949,6 +1105,14 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Writes the given value directly to the output without JSON string escaping. This is useful for
+     * writing pre-formatted JSON or raw numeric values.
+     *
+     * @param val the value to write without escaping
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeUnescapedString(final Object val) throws IOException {
         beforeValue();
         if (val instanceof CharSequence) {

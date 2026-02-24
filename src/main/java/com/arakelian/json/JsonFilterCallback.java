@@ -19,11 +19,27 @@ package com.arakelian.json;
 
 import java.io.IOException;
 
+/**
+ * Callback interface for receiving notifications during JSON filtering. Implementations can inject
+ * custom logic at the start and end of JSON objects.
+ */
 public interface JsonFilterCallback {
+    /**
+     * Called immediately after the start of a JSON object is written to the output.
+     *
+     * @param filter the filter currently processing the JSON
+     * @throws IOException if an I/O error occurs
+     */
     @SuppressWarnings("unused")
     public default void afterStartObject(final JsonFilter filter) throws IOException {
     }
 
+    /**
+     * Called immediately before the end of a JSON object is written to the output.
+     *
+     * @param filter the filter currently processing the JSON
+     * @throws IOException if an I/O error occurs
+     */
     @SuppressWarnings("unused")
     public default void beforeEndObject(final JsonFilter filter) throws IOException {
     }
