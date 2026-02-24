@@ -22,6 +22,10 @@ import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Tests for {@link JsonFilter}, verifying include/exclude filtering, pretty-printing, and
+ * compaction of JSON documents.
+ */
 public class JsonFilterTest {
     @Test
     public void testExcludeComplex() throws IOException {

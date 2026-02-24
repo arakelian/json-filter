@@ -2,47 +2,45 @@
 
 plugins {
     id 'java-library'
-    id 'maven-publish'
-    id 'signing'
+    id 'java-test-fixtures'
     id 'eclipse'
     id 'idea'
 
     // keep dependencies up-to-date!
-    id 'com.github.ben-manes.versions' version '0.46.0'
-
-    // useful for creating immutable java beans
-    id 'org.inferred.processors' version '3.7.0'
+    id 'com.github.ben-manes.versions' version '0.53.0'
 
     // to ensure clean code
-    id "net.ltgt.errorprone" version "3.1.0"
+    id "net.ltgt.errorprone" version "5.0.0"
 
     // for deployment to Maven Central
-    id "io.codearte.nexus-staging" version "0.30.0"
+    id "com.vanniktech.maven.publish" version "0.36.0"
 }
 
 group   = 'com.arakelian'
-version = '4.0.1'
+version = '5.0.0'
 
 
 apply from: "core.gradle"
 
-wrapper { 
-    gradleVersion = '8.1.1'
+wrapper {
+    gradleVersion = '9.3.1'
 }
 
-publishing.publications.mavenJava {
+mavenPublishing {
+    coordinates(project.group.toString(), project.name, project.version.toString())
+
     pom {
         name = "Json Filter"
         description = "High-speed stream-based filtering of arbitrarily large JSON documents."
         url = "https://github.com/arakelian/json-filter"
-        
+
         licenses {
             license {
                 name = 'The Apache License, Version 2.0'
                 url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
             }
         }
-        
+
         developers {
             developer {
                 id = 'arakelian'
@@ -50,7 +48,7 @@ publishing.publications.mavenJava {
                 email = 'greg@arakelian.com'
             }
         }
-        
+
         scm {
             connection = 'scm:git:https://github.com/arakelian/json-filter.git'
             developerConnection = 'scm:git:git@github.com:arakelian/json-filter.git'
@@ -60,28 +58,29 @@ publishing.publications.mavenJava {
 }
 
 dependencies {
-    processor 'org.immutables:value:2.9.3'
+    annotationProcessor 'org.immutables:value:2.10.1'
 
     // annotations
-    api 'org.immutables:value-annotations:2.9.3'
+    api 'org.immutables:value-annotations:2.10.1'
 
     // for date utils
-    api 'com.arakelian:more-commons:4.0.1'
-    
-    // configure errorprone version
-    errorprone 'com.google.errorprone:error_prone_core:2.18.0'
+    api 'com.arakelian:more-commons:5.1.0'
 
-    // we shadow Guava due to frequent downstream compatibility issues
-    api 'com.google.guava:guava:31.1-jre'
+    // configure errorprone version
+    errorprone 'com.google.errorprone:error_prone_core:2.36.0'
+
+    // we use Guava directly
+    api 'com.google.guava:guava:33.4.0-jre'
 
     // logging
-    testImplementation 'org.apache.logging.log4j:log4j-api:2.20.0'
-    testImplementation 'org.apache.logging.log4j:log4j-core:2.20.0'
-    testImplementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.20.0'
-    testImplementation 'org.slf4j:jcl-over-slf4j:2.0.7'
-    testImplementation 'org.slf4j:jul-to-slf4j:2.0.7'
-    api                'org.slf4j:slf4j-api:2.0.7'
+    testImplementation 'org.apache.logging.log4j:log4j-api:2.24.3'
+    testImplementation 'org.apache.logging.log4j:log4j-core:2.24.3'
+    testImplementation 'org.apache.logging.log4j:log4j-slf4j2-impl:2.24.3'
+    testImplementation 'org.slf4j:jcl-over-slf4j:2.0.16'
+    testImplementation 'org.slf4j:jul-to-slf4j:2.0.16'
+    api                'org.slf4j:slf4j-api:2.0.16'
 
     // for unit testing
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

@@ -22,6 +22,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation indicating that a field, method, parameter, or type may hold a {@code null} value.
+ * Used with Immutables to mark optional properties.
+ */
 @Target({ ElementType.ANNOTATION_TYPE, ElementType.METHOD, ElementType.FIELD, ElementType.TYPE,
         ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)

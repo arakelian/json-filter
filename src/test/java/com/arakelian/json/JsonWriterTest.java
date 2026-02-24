@@ -20,6 +20,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
+/**
+ * Tests for {@link JsonWriter}, verifying correct serialization of various data types, formatting
+ * options, and error handling.
+ */
 public class JsonWriterTest {
     @FunctionalInterface
     public interface JsonTest {
