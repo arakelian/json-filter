@@ -248,9 +248,8 @@ public class JsonWriter<W extends Writer> implements Closeable {
 
         public final void writeKey(final Object key) {
             Preconditions.checkState(container == Container.OBJECT, "key value pairs only valid in object");
-            if (key instanceof CharSequence) {
+            if (key instanceof CharSequence csq) {
                 // we are trying hard to avoid allocating stings, so we will store the key
-                final CharSequence csq = (CharSequence) key;
                 final int length = csq.length();
                 final int capacity = this.key != null ? this.key.length : 0;
                 if (length > capacity) {
@@ -406,11 +405,22 @@ public class JsonWriter<W extends Writer> implements Closeable {
         }
     }
 
+    /**
+     * Flushes the underlying writer.
+     *
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> flush() throws IOException {
         writer.flush();
         return this;
     }
 
+    /**
+     * Returns the underlying writer.
+     *
+     * @return the writer
+     */
     public final W getWriter() {
         return writer;
     }
@@ -510,34 +520,29 @@ public class JsonWriter<W extends Writer> implements Closeable {
             return true;
         }
 
-        if (value instanceof CharSequence) {
-            final CharSequence csq = (CharSequence) value;
+        if (value instanceof CharSequence csq) {
             return csq.length() == 0;
         }
 
-        if (value instanceof Double) {
-            final Double d = (Double) value;
+        if (value instanceof Double d) {
             if (d.isInfinite() || d.isNaN()) {
                 return true;
             }
             return false;
         }
 
-        if (value instanceof Float) {
-            final Float f = (Float) value;
+        if (value instanceof Float f) {
             if (f.isInfinite() || f.isNaN()) {
                 return true;
             }
             return false;
         }
 
-        if (value instanceof Map) {
-            final Map m = (Map) value;
+        if (value instanceof Map m) {
             return m.size() == 0;
         }
 
-        if (value instanceof List) {
-            final List l = (List) value;
+        if (value instanceof List l) {
             return l.size() == 0;
         }
 
@@ -573,18 +578,36 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return false;
     }
 
+    /**
+     * Returns {@code true} if pretty-printing is enabled.
+     *
+     * @return {@code true} if pretty-printing is enabled
+     */
     public final boolean isPretty() {
         return pretty;
     }
 
+    /**
+     * Returns {@code true} if empty values are skipped during serialization.
+     *
+     * @return {@code true} if empty values are skipped
+     */
     public final boolean isSkipEmpty() {
         return skipEmpty;
     }
 
+    /**
+     * Returns {@code true} if null values are skipped during serialization.
+     *
+     * @return {@code true} if null values are skipped
+     */
     public final boolean isSkipNulls() {
         return skipNulls;
     }
 
+    /**
+     * Resets the writer state to its initial configuration, allowing reuse.
+     */
     public final void reset() {
         this.indent = 0;
         for (int depth = 0, length = state.length; depth < length; depth++) {
@@ -593,37 +616,81 @@ public class JsonWriter<W extends Writer> implements Closeable {
         this.state[0].reset(Container.DOCUMENT);
     }
 
+    /**
+     * Sets whether pretty-printing is enabled.
+     *
+     * @param pretty {@code true} to enable pretty-printing
+     */
     public final void setPretty(final boolean pretty) {
         this.pretty = pretty;
     }
 
+    /**
+     * Sets whether empty values are skipped during serialization.
+     *
+     * @param skipEmpty {@code true} to skip empty values
+     */
     public final void setSkipEmpty(final boolean skipEmpty) {
         this.skipEmpty = skipEmpty;
     }
 
+    /**
+     * Sets whether null values are skipped during serialization.
+     *
+     * @param skipNulls {@code true} to skip null values
+     */
     public final void setSkipNulls(final boolean skipNulls) {
         this.skipNulls = skipNulls;
     }
 
+    /**
+     * Sets the underlying writer.
+     *
+     * @param writer the writer to output JSON to
+     */
     public final void setWriter(final W writer) {
         this.writer = writer;
     }
 
+    /**
+     * Sets whether pretty-printing is enabled.
+     *
+     * @param pretty {@code true} to enable pretty-printing
+     * @return this writer for chaining
+     */
     public final JsonWriter<W> withPretty(final boolean pretty) {
         setPretty(pretty);
         return this;
     }
 
+    /**
+     * Sets whether empty values are skipped during serialization.
+     *
+     * @param skipEmpty {@code true} to skip empty values
+     * @return this writer for chaining
+     */
     public final JsonWriter<W> withSkipEmpty(final boolean skipEmpty) {
         setSkipEmpty(skipEmpty);
         return this;
     }
 
+    /**
+     * Sets whether null values are skipped during serialization.
+     *
+     * @param skipNulls {@code true} to skip null values
+     * @return this writer for chaining
+     */
     public final JsonWriter<W> withSkipNulls(final boolean skipNulls) {
         setSkipNulls(skipNulls);
         return this;
     }
 
+    /**
+     * Sets the underlying writer.
+     *
+     * @param writer the writer to output JSON to
+     * @return this writer for chaining
+     */
     public final JsonWriter<W> withWriter(final W writer) {
         setWriter(writer);
         return this;
@@ -738,6 +805,14 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Writes the given {@code double} as a JSON number value. Non-finite values are written as
+     * JSON null.
+     *
+     * @param val the value to write
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeDouble(final double val) throws IOException {
         if (Double.isInfinite(val) || Double.isNaN(val)) {
             return writeNull();
@@ -749,6 +824,14 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Writes the given {@link Double} as a JSON number value. Null or non-finite values are
+     * written as JSON null.
+     *
+     * @param val the value to write, or {@code null} to write a JSON null
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeDouble(final Double val) throws IOException {
         if (val == null || val.isInfinite() || val.isNaN()) {
             return writeNull();
@@ -788,6 +871,14 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Writes the given {@code float} as a JSON number value. Non-finite values are written as
+     * JSON null.
+     *
+     * @param val the value to write
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeFloat(final float val) throws IOException {
         if (Float.isInfinite(val) || Float.isNaN(val)) {
             return writeNull();
@@ -799,6 +890,14 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Writes the given {@link Float} as a JSON number value. Null or non-finite values are
+     * written as JSON null.
+     *
+     * @param val the value to write, or {@code null} to write a JSON null
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeFloat(final Float val) throws IOException {
         if (val == null || val.isInfinite() || val.isNaN()) {
             return writeNull();
@@ -965,6 +1064,13 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Writes the given {@code int} as a JSON number value.
+     *
+     * @param val the value to write
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeNumber(final int val) throws IOException {
         final StringBuilder buf = new StringBuilder();
         buf.append(val);
@@ -972,6 +1078,13 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Writes the given {@code long} as a JSON number value.
+     *
+     * @param val the value to write
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeNumber(final long val) throws IOException {
         final StringBuilder buf = new StringBuilder();
         buf.append(val);
@@ -979,23 +1092,28 @@ public class JsonWriter<W extends Writer> implements Closeable {
         return this;
     }
 
+    /**
+     * Writes the given {@link Number} as a JSON number value, dispatching to the appropriate
+     * method based on the runtime type.
+     *
+     * @param val the value to write, or {@code null} to write a JSON null
+     * @return this writer for chaining
+     * @throws IOException if an I/O error occurs
+     */
     public final JsonWriter<W> writeNumber(final Number val) throws IOException {
         if (val == null) {
             return writeNull();
         }
 
-        if (val instanceof Double) {
-            final Double d = (Double) val;
+        if (val instanceof Double d) {
             return writeDouble(d);
         }
 
-        if (val instanceof Float) {
-            final Float f = (Float) val;
+        if (val instanceof Float f) {
             return writeFloat(f);
         }
 
-        if (val instanceof BigDecimal) {
-            final BigDecimal bd = (BigDecimal) val;
+        if (val instanceof BigDecimal bd) {
             return writeBigDecimal(bd);
         }
 
@@ -1021,13 +1139,11 @@ public class JsonWriter<W extends Writer> implements Closeable {
             return this;
         }
 
-        if (val instanceof Number) {
-            final Number n = (Number) val;
+        if (val instanceof Number n) {
             return writeNumber(n);
         }
 
-        if (val instanceof Boolean) {
-            final Boolean b = (Boolean) val;
+        if (val instanceof Boolean b) {
             return writeBoolean(b);
         }
 
@@ -1039,16 +1155,13 @@ public class JsonWriter<W extends Writer> implements Closeable {
             return writeList((Collection) val);
         }
 
-        if (val instanceof Date) {
-            final Date d = (Date) val;
+        if (val instanceof Date d) {
             return writeDate(d);
         }
-        if (val instanceof Instant) {
-            final Instant i = (Instant) val;
+        if (val instanceof Instant i) {
             return writeDate(i);
         }
-        if (val instanceof ZonedDateTime) {
-            final ZonedDateTime zdt = (ZonedDateTime) val;
+        if (val instanceof ZonedDateTime zdt) {
             return writeDate(zdt);
         }
 
@@ -1115,9 +1228,8 @@ public class JsonWriter<W extends Writer> implements Closeable {
      */
     public final JsonWriter<W> writeUnescapedString(final Object val) throws IOException {
         beforeValue();
-        if (val instanceof CharSequence) {
+        if (val instanceof CharSequence csq) {
             // we can avoid toString
-            final CharSequence csq = (CharSequence) val;
             internalWriteUnescapedString(csq);
         } else {
             final String csq = val != null ? val.toString() : "";

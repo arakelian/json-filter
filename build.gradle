@@ -7,13 +7,13 @@ plugins {
     id 'idea'
 
     // keep dependencies up-to-date!
-    id 'com.github.ben-manes.versions' version '0.53.0'
+    alias(libs.plugins.versions)
 
     // to ensure clean code
-    id "net.ltgt.errorprone" version "5.0.0"
+    alias(libs.plugins.errorprone)
 
     // for deployment to Maven Central
-    id "com.vanniktech.maven.publish" version "0.36.0"
+    alias(libs.plugins.maven.publish)
 }
 
 group   = 'com.arakelian'
@@ -58,29 +58,31 @@ mavenPublishing {
 }
 
 dependencies {
-    annotationProcessor 'org.immutables:value:2.10.1'
+    annotationProcessor libs.immutables.value
 
     // annotations
-    api 'org.immutables:value-annotations:2.10.1'
+    api libs.immutables.annotations
 
     // for date utils
-    api 'com.arakelian:more-commons:5.1.0'
+    api libs.more.commons
 
     // configure errorprone version
-    errorprone 'com.google.errorprone:error_prone_core:2.36.0'
+    errorprone libs.errorprone.core
 
     // we use Guava directly
-    api 'com.google.guava:guava:33.4.0-jre'
+    api libs.guava
 
-    // logging
-    testImplementation 'org.apache.logging.log4j:log4j-api:2.24.3'
-    testImplementation 'org.apache.logging.log4j:log4j-core:2.24.3'
-    testImplementation 'org.apache.logging.log4j:log4j-slf4j2-impl:2.24.3'
-    testImplementation 'org.slf4j:jcl-over-slf4j:2.0.16'
-    testImplementation 'org.slf4j:jul-to-slf4j:2.0.16'
-    api                'org.slf4j:slf4j-api:2.0.16'
+    // logging (Log4j versions managed by BOM)
+    testImplementation platform(libs.log4j.bom)
+    testImplementation libs.log4j.api
+    testImplementation libs.log4j.core
+    testImplementation libs.log4j.slf4j2.impl
+    testImplementation libs.jcl.over.slf4j
+    testImplementation libs.jul.to.slf4j
+    api                libs.slf4j.api
 
-    // for unit testing
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // for unit testing (JUnit versions managed by BOM)
+    testImplementation platform(libs.junit.bom)
+    testImplementation libs.junit.jupiter
+    testRuntimeOnly libs.junit.platform.launcher
 }

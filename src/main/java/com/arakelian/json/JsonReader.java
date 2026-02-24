@@ -44,10 +44,10 @@ public final class JsonReader {
      * Enumeration of JSON token types that can be encountered during parsing.
      */
     public enum JsonToken {
-        // Event indicating a JSON string value, including member names of objects
+        /** Event indicating a JSON string value, including member names of objects. */
         STRING,
 
-        // Event indicating a JSON number value which fits into a signed 64 bit integer
+        /** Event indicating a JSON number value which fits into a signed 64 bit integer. */
         LONG,
 
         /**
@@ -65,25 +65,25 @@ public final class JsonReader {
          */
         BIGNUMBER,
 
-        // Event indicating a JSON boolean
+        /** Event indicating a JSON boolean. */
         BOOLEAN,
 
-        // Event indicating a JSON null
+        /** Event indicating a JSON null. */
         NULL,
 
-        // Event indicating the start of a JSON object
+        /** Event indicating the start of a JSON object. */
         OBJECT_START,
 
-        // Event indicating the end of a JSON object
+        /** Event indicating the end of a JSON object. */
         OBJECT_END,
 
-        // Event indicating the start of a JSON array
+        /** Event indicating the start of a JSON array. */
         ARRAY_START,
 
-        // Event indicating the end of a JSON array
+        /** Event indicating the end of a JSON array. */
         ARRAY_END,
 
-        // Event indicating the end of input has been reached
+        /** Event indicating the end of input has been reached. */
         EOF;
     }
 
@@ -853,7 +853,7 @@ public final class JsonReader {
             if ((WS_MASK >> ch & 0x01) == 0) {
                 return ch;
             } else if (ch <= ' ') { // this will only be true if one of the whitespace bits was set
-                continue;
+                // skip whitespace
             } else if (!isWhitespace(ch)) { // we'll only reach here with certain bare strings,
                 // errors, or strange whitespace like 0xa0
                 return ch;
